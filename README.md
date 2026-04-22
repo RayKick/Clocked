@@ -22,8 +22,10 @@ CLOCKED turns concrete public promises into trackable claims with deadlines, evi
 ## Safe Defaults
 
 - `SAFE_DRY_RUN=true`
+- `X_READ_ENABLED=false`
 - `X_POSTING_ENABLED=false`
 - `HEYANON_ENABLE_LIVE_CALLS=false`
+- `ALLOW_ADMIN_QUERY_PASSWORD=false`
 - `RUN_AI_TESTS=false`
 - No live external writes by default.
 
@@ -162,6 +164,57 @@ curl -X POST http://localhost:8787/tools \
 - `corepack pnpm demo:smoke:web`
 - `corepack pnpm demo:smoke:mcp`
 - `corepack pnpm demo:summary`
+- `corepack pnpm staging:seed`
+- `corepack pnpm staging:smoke:web`
+- `corepack pnpm staging:smoke:mcp`
+- `corepack pnpm staging:summary`
+
+## Safe Staging Deploy
+
+Required infrastructure:
+
+- Postgres
+- web app host
+- MCP server host
+- worker process for fixtures or deadline tasks when needed
+
+Required env for reviewer staging:
+
+- `DATABASE_URL`
+- `APP_BASE_URL`
+- `CLOCKED_MCP_BASE_URL`
+- `ADMIN_PASSWORD`
+- `SAFE_DRY_RUN=true`
+- `X_READ_ENABLED=false`
+- `X_POSTING_ENABLED=false`
+- `HEYANON_ENABLE_LIVE_CALLS=false`
+- `ALLOW_ADMIN_QUERY_PASSWORD=false`
+
+Suggested deploy flow:
+
+```bash
+corepack pnpm install
+corepack pnpm db:generate
+corepack pnpm db:migrate
+corepack pnpm staging:seed
+corepack pnpm dev
+corepack pnpm mcp:dev
+corepack pnpm staging:smoke:web
+corepack pnpm staging:smoke:mcp
+```
+
+Reviewer checklist:
+
+- open the homepage
+- open the project page
+- open the claim page
+- open the actor page
+- open the due page
+- open the HUD export
+- open `/api/readiness`
+- test MCP `/health`, `/manifest`, and core tools
+- verify admin mutation routes require `x-clocked-admin-password`
+- verify no live X posting and no live HeyAnon/Gemma calls are enabled
 
 ## What Remains Mocked
 
@@ -194,6 +247,7 @@ curl -X POST http://localhost:8787/tools \
 
 - [Reviewer Guide](/Users/raiko/Desktop/clocked/docs/REVIEWER_GUIDE.md)
 - [Demo Script](/Users/raiko/Desktop/clocked/docs/DEMO_SCRIPT.md)
+- [Staging Guide](/Users/raiko/Desktop/clocked/docs/STAGING.md)
 - [Launchpad Readiness](/Users/raiko/Desktop/clocked/docs/LAUNCHPAD_READINESS.md)
 - [Deployment Checklist](/Users/raiko/Desktop/clocked/docs/DEPLOYMENT.md)
 - [MCP Tools](/Users/raiko/Desktop/clocked/docs/MCP_TOOLS.md)

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SectionShell } from "@clocked/ui";
 
 import { PageShell } from "../../../components/PageShell";
-import { getAdminUiState } from "../../../lib/env";
+import { getAdminUiState, isAdminQueryPasswordAllowed } from "../../../lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +13,13 @@ export default async function AdminIngestPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = (await searchParams) ?? {};
-  const adminPassword =
-    typeof params.password === "string" ? params.password : undefined;
+  const adminPassword = isAdminQueryPasswordAllowed()
+    ? typeof params.adminPassword === "string"
+      ? params.adminPassword
+      : typeof params.password === "string"
+        ? params.password
+        : undefined
+    : undefined;
   const adminUiState = getAdminUiState();
   const result = {
     reviewItemId:
@@ -41,6 +46,16 @@ export default async function AdminIngestPage({
           <strong>{adminUiState.bannerTitle}</strong>
           <p style={{ marginBottom: 0 }}>{adminUiState.bannerBody}</p>
         </div>
+        {adminUiState.passwordRequired && !adminUiState.queryPasswordAllowed ? (
+          <div className="panel" style={{ marginTop: "1rem" }}>
+            <strong>Header auth recommended in staging</strong>
+            <p style={{ marginBottom: 0 }}>
+              This page is safe to view publicly, but protected mutations should
+              use the <code>x-clocked-admin-password</code> header. Query/form
+              password fallback stays off by default.
+            </p>
+          </div>
+        ) : null}
       </section>
 
       <SectionShell
@@ -54,7 +69,9 @@ export default async function AdminIngestPage({
           className="panel"
           style={{ display: "grid", gap: "0.9rem" }}
         >
-          <input type="hidden" name="adminPassword" value={adminPassword ?? ""} />
+          {adminPassword ? (
+            <input type="hidden" name="adminPassword" value={adminPassword} />
+          ) : null}
           <input type="hidden" name="redirectTo" value="/admin/ingest" />
           <label style={{ display: "grid", gap: "0.4rem" }}>
             <span>X post URL</span>

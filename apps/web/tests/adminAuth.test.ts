@@ -106,6 +106,73 @@ describe("admin mutation protection", () => {
     expect(reviewMock.approveReviewItem).toHaveBeenCalledWith("review-2");
   });
 
+  it("rejects approve with the wrong x-clocked-admin-password", async () => {
+    process.env.ADMIN_PASSWORD = "secret";
+
+    const { POST } = await import("../app/api/admin/review/[id]/approve/route");
+    const response = await POST(
+      new Request("http://localhost:3000/api/admin/review/review-2/approve", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-clocked-admin-password": "wrong"
+        },
+        body: JSON.stringify({})
+      }),
+      { params: Promise.resolve({ id: "review-2" }) }
+    );
+
+    expect(response.status).toBe(401);
+    expect(reviewMock.approveReviewItem).not.toHaveBeenCalled();
+  });
+
+  it("rejects query password fallback by default", async () => {
+    process.env.ADMIN_PASSWORD = "secret";
+
+    const { POST } = await import("../app/api/admin/review/[id]/approve/route");
+    const response = await POST(
+      new Request(
+        "http://localhost:3000/api/admin/review/review-1/approve?adminPassword=secret",
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({})
+        }
+      ),
+      { params: Promise.resolve({ id: "review-1" }) }
+    );
+
+    expect(response.status).toBe(401);
+    expect(reviewMock.approveReviewItem).not.toHaveBeenCalled();
+  });
+
+  it("allows query password fallback only when ALLOW_ADMIN_QUERY_PASSWORD=true", async () => {
+    process.env.ADMIN_PASSWORD = "secret";
+    process.env.ALLOW_ADMIN_QUERY_PASSWORD = "true";
+    reviewMock.approveReviewItem.mockResolvedValue({
+      action: "BOT_REPLY",
+      reviewItemId: "review-query",
+      botReplyId: "bot-reply-query",
+      status: "APPROVED"
+    });
+
+    const { POST } = await import("../app/api/admin/review/[id]/approve/route");
+    const response = await POST(
+      new Request(
+        "http://localhost:3000/api/admin/review/review-query/approve?adminPassword=secret",
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({})
+        }
+      ),
+      { params: Promise.resolve({ id: "review-query" }) }
+    );
+
+    expect(response.status).toBe(200);
+    expect(reviewMock.approveReviewItem).toHaveBeenCalledWith("review-query");
+  });
+
   it("rejects reject-route requests when SAFE_DRY_RUN is false without credentials", async () => {
     process.env.SAFE_DRY_RUN = "false";
 

@@ -46,9 +46,18 @@ Fixtures are deterministic and should remain idempotent.
 ## Safety Defaults
 
 - `SAFE_DRY_RUN=true`
+- `ALLOW_ADMIN_QUERY_PASSWORD=false`
+- `X_READ_ENABLED=false`
 - `X_POSTING_ENABLED=false`
 - `HEYANON_ENABLE_LIVE_CALLS=false`
 - no automatic public posting from admin approve routes
+
+## Staging Notes
+
+- Set `ADMIN_PASSWORD` before exposing a staging deployment to reviewers.
+- Keep `ALLOW_ADMIN_QUERY_PASSWORD=false` in staging and use the `x-clocked-admin-password` header for protected mutations.
+- Use `/api/readiness` as the lightweight web readiness check.
+- `staging:seed`, `staging:smoke:web`, `staging:smoke:mcp`, and `staging:summary` are safe aliases for reviewer staging.
 
 ## Smoke Checks
 

@@ -42,11 +42,13 @@ const baseUrl = getWebBaseUrl(process.env);
 const urls = [
   `${baseUrl}/`,
   `${baseUrl}/admin/review`,
+  `${baseUrl}/admin/ingest`,
   `${baseUrl}/c/example-protocol-will-ship-v2-next-week`,
   `${baseUrl}/p/example-protocol`,
   `${baseUrl}/a/X/examplefounder`,
   `${baseUrl}/due`,
-  `${baseUrl}/api/hud/project/example-protocol`
+  `${baseUrl}/api/hud/project/example-protocol`,
+  `${baseUrl}/api/readiness`
 ];
 
 try {

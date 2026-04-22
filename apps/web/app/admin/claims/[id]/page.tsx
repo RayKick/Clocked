@@ -2,7 +2,10 @@ import { notFound } from "next/navigation";
 
 import { PageShell } from "../../../../components/PageShell";
 import { prisma } from "@clocked/db";
-import { getAdminUiState } from "../../../../lib/env";
+import {
+  getAdminUiState,
+  isAdminQueryPasswordAllowed
+} from "../../../../lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +18,13 @@ export default async function AdminClaimPage({
 }) {
   const { id } = await params;
   const query = (await searchParams) ?? {};
-  const adminPassword =
-    typeof query.password === "string" ? query.password : undefined;
+  const adminPassword = isAdminQueryPasswordAllowed()
+    ? typeof query.adminPassword === "string"
+      ? query.adminPassword
+      : typeof query.password === "string"
+        ? query.password
+        : undefined
+    : undefined;
   const adminUiState = getAdminUiState();
   const claim = await prisma.claim.findUnique({
     where: { id },
@@ -42,7 +50,9 @@ export default async function AdminClaimPage({
             method="post"
             className="inline-form"
           >
-            <input type="hidden" name="adminPassword" value={adminPassword ?? ""} />
+            {adminPassword ? (
+              <input type="hidden" name="adminPassword" value={adminPassword} />
+            ) : null}
             <input type="hidden" name="redirectTo" value={`/admin/claims/${claim.id}`} />
             <select name="status" defaultValue={claim.status}>
               {["OPEN", "DELIVERED", "SLIPPED", "REFRAMED", "SUPERSEDED", "AMBIGUOUS"].map(
@@ -64,7 +74,9 @@ export default async function AdminClaimPage({
             method="post"
             className="inline-form"
           >
-            <input type="hidden" name="adminPassword" value={adminPassword ?? ""} />
+            {adminPassword ? (
+              <input type="hidden" name="adminPassword" value={adminPassword} />
+            ) : null}
             <input type="hidden" name="redirectTo" value={`/admin/claims/${claim.id}`} />
             <input type="text" name="summary" placeholder="Evidence summary" required />
             <input type="text" name="url" placeholder="Evidence URL" />

@@ -90,13 +90,17 @@ export function AdminReviewCard(props: {
       <div className="admin-actions">
         {verdict === "NOT_CLOCKABLE" ? null : (
           <form action={`/api/admin/review/${props.reviewItem.id}/approve`} method="post">
-            <input type="hidden" name="adminPassword" value={props.adminPassword ?? ""} />
+            {props.adminPassword ? (
+              <input type="hidden" name="adminPassword" value={props.adminPassword} />
+            ) : null}
             <input type="hidden" name="redirectTo" value="/admin/review" />
             <button type="submit">Approve</button>
           </form>
         )}
         <form action={`/api/admin/review/${props.reviewItem.id}/reject`} method="post">
-          <input type="hidden" name="adminPassword" value={props.adminPassword ?? ""} />
+          {props.adminPassword ? (
+            <input type="hidden" name="adminPassword" value={props.adminPassword} />
+          ) : null}
           <input type="hidden" name="reason" value="Rejected from admin queue." />
           <input type="hidden" name="redirectTo" value="/admin/review" />
           <button type="submit" className="secondary">

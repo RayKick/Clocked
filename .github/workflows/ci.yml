@@ -7,6 +7,12 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      SAFE_DRY_RUN: "true"
+      X_READ_ENABLED: "false"
+      X_POSTING_ENABLED: "false"
+      HEYANON_ENABLE_LIVE_CALLS: "false"
+      RUN_AI_TESTS: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

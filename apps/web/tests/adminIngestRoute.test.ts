@@ -85,6 +85,54 @@ describe("admin ingest route", () => {
     expect(ingestMock.ingestXPost).not.toHaveBeenCalled();
   });
 
+  it("rejects query password fallback when ALLOW_ADMIN_QUERY_PASSWORD=false", async () => {
+    process.env.ADMIN_PASSWORD = "secret";
+
+    const { POST } = await import("../app/api/admin/ingest/x-post/route");
+    const response = await POST(
+      new Request("http://localhost:3000/api/admin/ingest/x-post?adminPassword=secret", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          url: "https://x.com/examplefounder/status/1234567890",
+          sourceText: "Rewards dashboard ships by Friday."
+        })
+      })
+    );
+
+    expect(response.status).toBe(401);
+    expect(ingestMock.ingestXPost).not.toHaveBeenCalled();
+  });
+
+  it("allows header auth when ADMIN_PASSWORD is set", async () => {
+    process.env.ADMIN_PASSWORD = "secret";
+    ingestMock.ingestXPost.mockResolvedValue({
+      reviewItemId: "review-header",
+      verdict: "CLOCKABLE",
+      normalizedClaim: "Example Protocol will ship the rewards dashboard by Friday.",
+      deadlineAt: "2026-04-17T23:59:59.000Z",
+      message: "Created a pending review item."
+    });
+
+    const { POST } = await import("../app/api/admin/ingest/x-post/route");
+    const response = await POST(
+      new Request("http://localhost:3000/api/admin/ingest/x-post", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-clocked-admin-password": "secret"
+        },
+        body: JSON.stringify({
+          url: "https://x.com/examplefounder/status/1234567890",
+          sourceText: "Rewards dashboard ships by Friday."
+        })
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(ingestMock.ingestXPost).toHaveBeenCalledOnce();
+  });
+
   it("rejects invalid ingest payloads", async () => {
     const { POST } = await import("../app/api/admin/ingest/x-post/route");
     const response = await POST(

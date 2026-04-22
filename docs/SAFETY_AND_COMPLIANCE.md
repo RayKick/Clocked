@@ -109,6 +109,7 @@ Required constraints:
 
 - `SAFE_DRY_RUN=true` by default
 - `X_READ_ENABLED=false` by default
+- `ALLOW_ADMIN_QUERY_PASSWORD=false` by default
 - no X posting unless `X_POSTING_ENABLED=true`
 - no live X reads unless `X_READ_ENABLED=true`
 - no posting unless an admin-approved `BotReply` exists
@@ -117,7 +118,7 @@ Required constraints:
 
 This ensures local development and test runs remain safe.
 
-X reads and X writes are separate controls. `X_POSTING_ENABLED` only governs writes. `X_READ_ENABLED` governs live read attempts. Human review remains required either way.
+X reads and X writes are separate controls. `X_POSTING_ENABLED` only governs writes. `X_READ_ENABLED` governs live read attempts. Human review remains required either way. Query/form password fallback for admin routes should remain disabled outside local-only workflows.
 
 ## Secrets Handling
 

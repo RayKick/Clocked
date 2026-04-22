@@ -1,6 +1,6 @@
 # Deployment Checklist
 
-This is a deployment checklist for staging and production readiness, not a vendor-specific deployment guide.
+This is a deployment checklist for safe staging and later production readiness, not a vendor-specific deployment guide.
 
 ## Required Services
 
@@ -8,6 +8,7 @@ This is a deployment checklist for staging and production readiness, not a vendo
 - Postgres
 - web app host
 - MCP server host
+- optional worker process for fixture, deadline, and evidence jobs
 
 ## Required Environment Variables
 
@@ -16,20 +17,54 @@ This is a deployment checklist for staging and production readiness, not a vendo
 - `CLOCKED_MCP_BASE_URL`
 - `SAFE_DRY_RUN`
 - `ADMIN_PASSWORD`
+- `ALLOW_ADMIN_QUERY_PASSWORD=false`
+- `X_READ_ENABLED=false` by default
 - `X_POSTING_ENABLED=false` by default
 - `HEYANON_ENABLE_LIVE_CALLS=false` by default
 
 ## Staging Checklist
 
 - set `ADMIN_PASSWORD`
+- keep `SAFE_DRY_RUN=true`
+- keep `X_READ_ENABLED=false`
+- keep `X_POSTING_ENABLED=false`
+- keep `HEYANON_ENABLE_LIVE_CALLS=false`
+- keep `ALLOW_ADMIN_QUERY_PASSWORD=false`
 - run migrations
 - seed demo data if desired
 - verify admin protection
 - verify public pages
 - verify MCP
 - verify HUD
+- verify `/api/readiness`
 - verify no X posting
 - verify no live HeyAnon or Gemma calls
+
+## Safe Staging Deploy
+
+```bash
+corepack pnpm install
+corepack pnpm db:generate
+corepack pnpm db:migrate
+corepack pnpm staging:seed
+corepack pnpm dev
+corepack pnpm mcp:dev
+corepack pnpm staging:smoke:web
+corepack pnpm staging:smoke:mcp
+```
+
+Reviewer checklist:
+
+- open the homepage
+- open the project page
+- open the claim page
+- open the actor page
+- open the due page
+- open the HUD export
+- open `/api/readiness`
+- test MCP `/health`, `/manifest`, `clocked.extract_claim_from_text`, `clocked.search_claims`, `clocked.get_claim`, and `clocked.get_project_record`
+- verify admin mutation endpoints reject unauthenticated requests
+- verify no live external writes are enabled
 
 ## Production Checklist
 
@@ -49,3 +84,10 @@ This is a deployment checklist for staging and production readiness, not a vendo
 - disable new integrations before rollback if needed
 - verify public pages and MCP after rollback
 - verify dry-run and admin safety flags after rollback
+
+## Explicit Non-Goals
+
+- no live X posting
+- no live HeyAnon or Gemma calls
+- no token utility
+- no on-chain actions
