@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "generate": "node ./scripts/with-root-env.mjs prisma generate",
-    "migrate": "node ./scripts/with-root-env.mjs prisma migrate dev",
+    "migrate": "node ./scripts/with-root-env.mjs corepack pnpm exec prisma db push",
     "seed": "node ./scripts/with-root-env.mjs tsx src/seed.ts",
     "studio": "prisma studio"
   },

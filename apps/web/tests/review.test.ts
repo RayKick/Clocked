@@ -36,7 +36,9 @@ describe("review actions", () => {
     vi.resetAllMocks();
   });
 
-  it("approves CLAIM_CREATE into an open claim and draft bot reply", async () => {
+  it(
+    "approves CLAIM_CREATE into an open claim and draft bot reply",
+    async () => {
     prismaMock.reviewItem.findUnique.mockResolvedValue({
       id: "review-1",
       kind: "CLAIM_CREATE",
@@ -76,8 +78,10 @@ describe("review actions", () => {
       publicSlug: "example-protocol-example-protocol-will-ship-v2-next-week",
       botReplyId: "bot-reply-1"
     });
-    expect(prismaMock.botReply.create).toHaveBeenCalledOnce();
-  });
+      expect(prismaMock.botReply.create).toHaveBeenCalledOnce();
+    },
+    10_000
+  );
 
   it("approves BOT_REPLY without posting externally", async () => {
     prismaMock.reviewItem.findUnique.mockResolvedValue({

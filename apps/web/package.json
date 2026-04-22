@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build && node ./scripts/normalize-tsconfig.mjs",
+    "dev": "node ./scripts/with-root-env.mjs corepack pnpm exec next dev",
+    "build": "node ./scripts/with-root-env.mjs corepack pnpm exec next build",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
