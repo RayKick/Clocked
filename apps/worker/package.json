@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "tsx src/index.ts dev",
     "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js dev",
     "lint": "eslint src",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests",

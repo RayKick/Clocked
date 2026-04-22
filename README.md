@@ -165,6 +165,8 @@ curl -X POST http://localhost:8787/tools \
 - `corepack pnpm demo:smoke:mcp`
 - `corepack pnpm demo:summary`
 - `corepack pnpm staging:seed`
+- `corepack pnpm staging:check-env`
+- `corepack pnpm staging:preflight`
 - `corepack pnpm staging:smoke:web`
 - `corepack pnpm staging:smoke:mcp`
 - `corepack pnpm staging:summary`
@@ -196,12 +198,17 @@ Suggested deploy flow:
 corepack pnpm install
 corepack pnpm db:generate
 corepack pnpm db:migrate
+corepack pnpm staging:check-env
 corepack pnpm staging:seed
-corepack pnpm dev
-corepack pnpm mcp:dev
+corepack pnpm web:start
+corepack pnpm mcp:start
+corepack pnpm worker:start
+corepack pnpm staging:preflight
 corepack pnpm staging:smoke:web
 corepack pnpm staging:smoke:mcp
 ```
+
+Use `STAGING_STRICT=true corepack pnpm staging:check-env` when you want missing staging-only secrets to fail preflight instead of reporting warnings.
 
 Reviewer checklist:
 

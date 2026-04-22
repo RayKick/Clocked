@@ -46,12 +46,17 @@ This is a deployment checklist for safe staging and later production readiness, 
 corepack pnpm install
 corepack pnpm db:generate
 corepack pnpm db:migrate
+corepack pnpm staging:check-env
 corepack pnpm staging:seed
-corepack pnpm dev
-corepack pnpm mcp:dev
+corepack pnpm web:start
+corepack pnpm mcp:start
+corepack pnpm worker:start
+corepack pnpm staging:preflight
 corepack pnpm staging:smoke:web
 corepack pnpm staging:smoke:mcp
 ```
+
+Use `STAGING_STRICT=true corepack pnpm staging:check-env` when you want missing staging secrets to fail the deploy preflight.
 
 Reviewer checklist:
 

@@ -81,6 +81,7 @@ Fixtures are idempotent and cleanup targets only known demo artifacts. Do not ru
 WEB_BASE_URL=https://your-staging-web.example.com corepack pnpm staging:smoke:web
 MCP_BASE_URL=https://your-staging-mcp.example.com corepack pnpm staging:smoke:mcp
 corepack pnpm staging:summary
+STAGING_STRICT=true corepack pnpm staging:check-env
 ```
 
 Public smoke checks:
@@ -95,3 +96,32 @@ Public smoke checks:
 - `/api/readiness`
 
 Admin mutations should only be tested with `x-clocked-admin-password`, not query parameter passwords.
+
+## Alternate Hosted Smoke Form
+
+```bash
+APP_BASE_URL=https://your-web-staging.example.com \
+CLOCKED_MCP_BASE_URL=https://your-mcp-staging.example.com \
+corepack pnpm staging:summary
+```
+
+## Reviewer URLs
+
+- `${APP_BASE_URL}`
+- `${APP_BASE_URL}/admin/review`
+- `${APP_BASE_URL}/admin/ingest`
+- `${APP_BASE_URL}/p/example-protocol`
+- `${APP_BASE_URL}/c/example-protocol-will-ship-v2-next-week`
+- `${APP_BASE_URL}/a/X/examplefounder`
+- `${APP_BASE_URL}/due`
+- `${APP_BASE_URL}/api/hud/project/example-protocol`
+- `${APP_BASE_URL}/api/readiness`
+- `${CLOCKED_MCP_BASE_URL}/health`
+- `${CLOCKED_MCP_BASE_URL}/manifest`
+
+## Warnings
+
+- Do not set `X_POSTING_ENABLED=true` in reviewer staging.
+- Do not set `HEYANON_ENABLE_LIVE_CALLS=true` in reviewer staging.
+- Do not set `X_READ_ENABLED=true` unless you are intentionally testing read-only X with approved credentials.
+- `ADMIN_PASSWORD` must be set before sharing the staging URL.
