@@ -26,7 +26,7 @@ CLOCKED is a HeyAnon-native public memory layer for time-bounded crypto commitme
 `DATABASE_URL` should be:
 
 ```bash
-postgresql://clocked:clocked@localhost:5432/clocked?schema=public
+postgresql://clocked:clocked@localhost:5433/clocked?schema=public
 ```
 
 Run:

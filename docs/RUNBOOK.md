@@ -9,7 +9,7 @@ This runbook covers the database package, schema lifecycle, seed data, and the D
 Expected environment variables for backend work:
 
 - `DATABASE_URL`: PostgreSQL connection string used by Prisma.
-- Recommended local value: `postgresql://clocked:clocked@localhost:5432/clocked?schema=public`
+- Recommended local value: `postgresql://clocked:clocked@localhost:5433/clocked?schema=public`
 - `SAFE_DRY_RUN=true`: expected default operating mode for the wider app.
 - `HEYANON_ENABLE_LIVE_CALLS=false`: expected default for evidence workers.
 - `X_POSTING_ENABLED=false`: expected default for posting workers.
