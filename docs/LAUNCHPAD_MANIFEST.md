@@ -8,41 +8,27 @@ Example CLOCKED manifest:
   "description": "HeyAnon-native public receipts agent for crypto promises, deadlines, evidence, and delivery records.",
   "category": "Public receipts / accountability / research infrastructure",
   "surfaces": ["X bot", "web app", "MCP server", "HeyAnon agent", "HUD export"],
-  "dryRunStatus": true
+  "tools": ["clocked.search_claims", "clocked.get_claim", "clocked.get_project_record"],
+  "dataSources": ["CLOCKED database", "public X API wrappers", "optional HeyAnon/Gemma mocks"],
+  "safetyPolicy": {
+    "dryRun": true,
+    "humanReviewDefault": true,
+    "noLiveWritesByDefault": true
+  }
 }
 ```
 
-## Tools
+## Dry-Run Readiness
 
-- Search claims
-- Get claim
-- Get project record
-- Get actor record
-- Get due claims
-- Extract claim from text
-- Create claim draft
-- Evaluate claim status
-- Submit evidence
-- Weekly digest
+- safe defaults stay enabled
+- public copy stays neutral and factual
+- no liar score or trust score
+- no live X posting
+- no live HeyAnon or Gemma calls
 
-## Data Sources
+## Future Launchpad Requirements
 
-- CLOCKED database
-- Public X data through official API wrappers
-- Optional HeyAnon and Gemma enrichment
-- Official GitHub and GitBook public sources where configured
-
-## Safety Policy
-
-- Neutral, factual copy only
-- No liar score
-- Human review by default
-- No live external writes without explicit env enablement
-
-## Readiness Checklist
-
-- Confirm real HeyAnon endpoints
-- Confirm Launchpad packaging requirements
-- Confirm remote MCP auth expectations
-- Confirm HUD registration and refresh semantics
-
+- confirmed Launchpad manifest contract
+- confirmed import or publish workflow
+- confirmed auth and hosting requirements
+- production credential management

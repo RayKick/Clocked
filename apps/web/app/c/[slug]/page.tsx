@@ -2,6 +2,7 @@ import { JsonBlock, SectionShell, StatusBadge } from "@clocked/ui";
 import { notFound } from "next/navigation";
 
 import { PageShell } from "../../../components/PageShell";
+import { getAppBaseUrl } from "../../../lib/env";
 import { formatDisplayDate } from "../../../lib/format";
 import { getClaimBySlug } from "../../../lib/data";
 
@@ -19,22 +20,39 @@ export default async function ClaimPage({
     notFound();
   }
 
+  const publicUrl = `${getAppBaseUrl()}/c/${claim.publicSlug}`;
+
   return (
     <PageShell>
       <section className="hero">
         <StatusBadge status={claim.status} />
         <h1>{claim.normalizedClaim}</h1>
-        <p>{claim.project?.name ?? "Unassigned project"} · {claim.actor ? `@${claim.actor.handle}` : "Unknown source"}</p>
+        <p>
+          {claim.project?.name ?? "Unassigned project"} ·{" "}
+          {claim.actor ? `@${claim.actor.handle}` : "Unknown source"} ·{" "}
+          {claim.sourcePost.platform}
+        </p>
         <p>{claim.sourceQuote}</p>
+        <p>
+          This receipt records a public, time-bounded claim and its evidence trail.
+          It does not infer intent.
+        </p>
       </section>
       <div className="detail-grid">
-        <SectionShell title="Receipt">
+        <SectionShell
+          title="Receipt"
+          body="Public source, deadline logic, and evaluation criteria are preserved here so later evidence can be reviewed against the original claim."
+        >
           <div className="panel">
             <ul className="simple-list">
               <li>Project: {claim.project?.name ?? "Unassigned"}</li>
               <li>Source: {claim.actor ? `@${claim.actor.handle}` : "Unknown"}</li>
+              <li>Source platform: {claim.sourcePost.platform}</li>
               <li>Deadline text: {claim.deadlineText}</li>
               <li>Deadline at: {formatDisplayDate(claim.deadlineAt)}</li>
+              <li>
+                Public receipt URL: <a href={publicUrl}>{publicUrl}</a>
+              </li>
               <li>
                 Source link:{" "}
                 {claim.sourcePost.url ? (
@@ -74,7 +92,10 @@ export default async function ClaimPage({
             ) : null}
           </div>
         </SectionShell>
-        <SectionShell title="Evidence and status history">
+        <SectionShell
+          title="Evidence and status history"
+          body="Statuses describe the public record only: Open, Delivered, Slipped, Reframed, Superseded, or Ambiguous."
+        >
           <div className="panel">
             <h3>Evidence timeline</h3>
             <ul className="timeline">
@@ -85,6 +106,7 @@ export default async function ClaimPage({
                 </li>
               ))}
             </ul>
+            {claim.evidence.length === 0 ? <p>No public evidence has been attached yet.</p> : null}
           </div>
           <div className="panel">
             <h3>Status history</h3>

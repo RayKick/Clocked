@@ -29,6 +29,10 @@ export default async function ActorPage({
           {record.actor.actorType} · {record.actor.verifiedSource ? "Verified source" : "Unverified source"}
         </p>
         <p>{record.factualSummary}</p>
+        <p>
+          This page lists public claims attributed to this actor or linked
+          project sources.
+        </p>
       </section>
       <SectionShell title="Associated projects">
         <div className="stats">
@@ -46,6 +50,11 @@ export default async function ActorPage({
               {label}: {count}
             </span>
           ))}
+        </div>
+      </SectionShell>
+      <SectionShell title="Public actor record URL">
+        <div className="panel">
+          <a href={record.publicUrl}>{record.publicUrl}</a>
         </div>
       </SectionShell>
       <SectionShell title="Claim history">

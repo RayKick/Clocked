@@ -1,3 +1,4 @@
+import React from "react";
 import { SectionShell } from "@clocked/ui";
 
 import { AdminReviewCard } from "../../../components/AdminReviewCard";
@@ -18,10 +19,18 @@ export default async function AdminReviewPage({
 
   return (
     <PageShell>
+      <section className="hero">
+        <span className="tab">Dry-run safety</span>
+        <h1>Admin review queue</h1>
+        <p>
+          Dry-run mode: approvals create local records only. X posting and live
+          HeyAnon/Gemma calls are disabled.
+        </p>
+      </section>
       <SectionShell
         eyebrow="Pending"
         title="Admin review queue"
-        body="Approving CLAIM_CREATE turns a reviewed draft into a public claim and creates a draft bot reply. All public actions remain safe by default."
+        body="Approving CLAIM_CREATE turns a reviewed draft into a public claim and creates a draft bot reply. Approval does not post externally."
       >
         <div className="card-grid">
           {reviewItems.map((item) => (

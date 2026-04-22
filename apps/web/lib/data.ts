@@ -215,21 +215,33 @@ export async function getActorRecordByHandle(
 }
 
 export async function getDueBuckets() {
-  const claims = await getClaims({ status: "OPEN", limit: 200 });
+  const [openClaims, allClaims] = await Promise.all([
+    getClaims({ status: "OPEN", limit: 200 }),
+    getClaims({ limit: 200 })
+  ]);
   const now = new Date();
   const todayEnd = new Date(now);
   todayEnd.setUTCHours(23, 59, 59, 999);
   const weekEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const counts = countClaimsByStatus(allClaims);
 
   return {
-    today: claims.filter((claim) => claim.deadlineAt && claim.deadlineAt <= todayEnd),
-    thisWeek: claims.filter(
+    today: openClaims.filter((claim) => claim.deadlineAt && claim.deadlineAt <= todayEnd),
+    thisWeek: openClaims.filter(
       (claim) =>
         claim.deadlineAt &&
         claim.deadlineAt > todayEnd &&
         claim.deadlineAt <= weekEnd
     ),
-    overdue: claims.filter((claim) => claim.deadlineAt && claim.deadlineAt < now)
+    overdue: openClaims.filter((claim) => claim.deadlineAt && claim.deadlineAt < now),
+    recentlyDelivered: allClaims.filter((claim) => claim.status === "DELIVERED").slice(0, 6),
+    recentlyReframed: allClaims.filter((claim) => claim.status === "REFRAMED").slice(0, 6),
+    digest: `CLOCKED this week: ${openClaims.filter(
+      (claim) =>
+        claim.deadlineAt &&
+        claim.deadlineAt >= now &&
+        claim.deadlineAt <= weekEnd
+    ).length} open claim(s) due soon, ${counts.DELIVERED} delivered, ${counts.SLIPPED} slipped, ${counts.REFRAMED} reframed.`
   };
 }
 

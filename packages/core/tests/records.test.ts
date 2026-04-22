@@ -111,5 +111,9 @@ describe("records", () => {
     expect(payload.projectSlug).toBe("mega-chain");
     expect(payload.slippedCount).toBe(1);
     expect(payload.publicRecordUrl).toBe("http://localhost:3000/p/mega-chain");
+    expect(payload.recordCopy).toBe(
+      "1 open claim, 0 delivered claims, and 1 slipped claim in the public record."
+    );
+    expect(payload.riskCopy).toBe(payload.recordCopy);
   });
 });

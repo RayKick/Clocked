@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 import Link from "next/link";
 
 export function PageShell(props: { children: ReactNode }) {
@@ -19,4 +19,3 @@ export function PageShell(props: { children: ReactNode }) {
     </div>
   );
 }
-

@@ -14,18 +14,21 @@ CLOCKED provides a compact project-context export intended for future HeyAnon HU
   "slippedCount": 0,
   "reframedCount": 0,
   "latestClaim": {
-    "slug": "example-protocol-example-protocol-will-publish-the-public-beta",
-    "status": "DELIVERED",
-    "claim": "Example Protocol will publish the public beta by April 20."
+    "slug": "example-protocol-example-protocol-will-ship-v2-next-week",
+    "status": "OPEN",
+    "claim": "Example Protocol will ship V2 next week."
   },
   "latestStatusChange": {
-    "toStatus": "DELIVERED",
-    "at": "2026-04-22T10:00:00.000Z"
+    "toStatus": "OPEN",
+    "at": "2026-04-22T12:40:19.273Z"
   },
-  "publicRecordUrl": "http://localhost:3000/p/example-protocol",
-  "riskCopy": "Public record shows current and delivered commitments."
+  "publicRecordUrl": "http://localhost:3002/p/example-protocol",
+  "recordCopy": "1 open claim, 1 delivered claim, and 0 slipped claims in the public record.",
+  "riskCopy": "1 open claim, 1 delivered claim, and 0 slipped claims in the public record."
 }
 ```
+
+`riskCopy` remains for backward compatibility. `recordCopy` is the preferred neutral field.
 
 ## Expanded Mode
 
@@ -35,7 +38,8 @@ CLOCKED provides a compact project-context export intended for future HeyAnon HU
 ## What Not To Include
 
 - API keys
-- Admin passwords
-- Private moderation notes
-- Numerical trust scores
-- Defamatory language
+- admin passwords
+- private moderation notes
+- numerical trust scores
+- liar scores
+- defamatory language

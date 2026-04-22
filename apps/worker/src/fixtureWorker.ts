@@ -10,6 +10,12 @@ const PROJECT_SLUG = "example-protocol";
 const PROJECT_NAME = "Example Protocol";
 const FOUNDER_HANDLE = "examplefounder";
 const PROJECT_HANDLE = "exampleprotocol";
+const LEGACY_FIXTURE_REASONS = [
+  "Fixture review item: claim create for Example Protocol V2."
+];
+const LEGACY_FIXTURE_CLAIM_SLUGS = [
+  "example-protocol-example-protocol-will-publish-the-public-beta-by"
+];
 
 type FixtureReviewPayload = Record<string, unknown>;
 
@@ -18,16 +24,17 @@ function toJsonValue(value: unknown): Prisma.InputJsonValue {
 }
 
 export const FIXTURE_IDS = {
-  clockablePostId: "fixture-example-clockable-post",
+  approvedOpenClaimPostId: "fixture-example-clocked-open-post",
+  pendingClaimCreatePostId: "fixture-example-pending-claim-create-post",
   notClockablePostId: "fixture-example-not-clockable-post",
   ambiguousPostId: "fixture-example-ambiguous-post",
   deliveredPromisePostId: "fixture-example-delivered-promise-post",
   deliveredProofPostId: "fixture-example-delivered-proof-post",
   reframePostId: "fixture-example-reframe-post",
-  triggerClockableId: "fixture-example-clockable-trigger",
+  triggerPendingClaimCreateId: "fixture-example-pending-claim-create-trigger",
   triggerNotClockableId: "fixture-example-not-clockable-trigger",
   triggerAmbiguousId: "fixture-example-ambiguous-trigger",
-  claimCreateReason: "Fixture review item: claim create for Example Protocol V2.",
+  claimCreateReason: "Fixture review item: claim create for Example Protocol updated docs.",
   notClockableReason: "Fixture review item: not clockable Example Protocol source.",
   ambiguousReason: "Fixture review item: ambiguous Example Protocol source.",
   reframeReason: "Fixture review item: Example Protocol reframe candidate.",
@@ -68,16 +75,17 @@ export function buildFixturePayloads() {
 
   return {
     clockablePostedAt,
+    pendingClaimCreatePostedAt: "2026-04-16T08:00:00.000Z",
     ambiguousPostedAt,
     notClockablePostedAt,
     deliveredPromisePostedAt,
     deliveredProofPostedAt,
     reframePostedAt,
-    clockableReviewPayload: {
-      fixtureKey: "example-clockable-claim-create",
+    approvedOpenClaim: {
+      fixtureKey: "example-approved-open-claim",
       sourcePlatform: "X",
-      sourcePlatformPostId: FIXTURE_IDS.clockablePostId,
-      sourceUrl: `https://x.com/${FOUNDER_HANDLE}/status/${FIXTURE_IDS.clockablePostId}`,
+      sourcePlatformPostId: FIXTURE_IDS.approvedOpenClaimPostId,
+      sourceUrl: `https://x.com/${FOUNDER_HANDLE}/status/${FIXTURE_IDS.approvedOpenClaimPostId}`,
       sourcePostedAt: clockablePostedAt,
       sourceText: "V2 ships next week.",
       actorHandle: FOUNDER_HANDLE,
@@ -99,6 +107,35 @@ export function buildFixturePayloads() {
       nonDeliveryCriteria: toJsonArray([
         "A teaser, waitlist, or vague update without a public V2 release.",
         "A delayed or reframed announcement without delivery."
+      ]),
+      ambiguityNotes: []
+    } satisfies FixtureReviewPayload,
+    pendingClaimCreateReviewPayload: {
+      fixtureKey: "example-pending-claim-create",
+      sourcePlatform: "X",
+      sourcePlatformPostId: FIXTURE_IDS.pendingClaimCreatePostId,
+      sourceUrl: `https://x.com/${FOUNDER_HANDLE}/status/${FIXTURE_IDS.pendingClaimCreatePostId}`,
+      sourcePostedAt: "2026-04-16T08:00:00.000Z",
+      sourceText: "Updated docs ship by Friday.",
+      actorHandle: FOUNDER_HANDLE,
+      projectSlug: PROJECT_SLUG,
+      projectName: PROJECT_NAME,
+      verdict: "CLOCKABLE",
+      normalizedClaim: "Example Protocol will publish updated docs by Friday.",
+      sourceQuote: "Updated docs ship by Friday.",
+      deliverable: "Updated docs",
+      deadlineText: "by Friday",
+      deadlineAt: "2026-04-17T23:59:59.000Z",
+      deadlineTimezone: "UTC",
+      deadlineConfidence: 0.88,
+      extractionConfidence: 0.9,
+      deliveryCriteria: toJsonArray([
+        "Updated public docs are published or linked.",
+        "The docs are attributable to Example Protocol."
+      ]),
+      nonDeliveryCriteria: toJsonArray([
+        "A teaser or roadmap note without published docs.",
+        "A delay or scope change without the docs being published."
       ]),
       ambiguityNotes: []
     } satisfies FixtureReviewPayload,
@@ -147,11 +184,11 @@ export function buildFixturePayloads() {
       ])
     } satisfies FixtureReviewPayload,
     deliveredClaim: {
-      sourceQuote: "Public beta ships by April 20.",
-      normalizedClaim: "Example Protocol will publish the public beta by April 20.",
-      deliverable: "Public beta",
-      deadlineText: "by April 20",
-      deadlineAt: "2026-04-20T23:59:59.000Z",
+      sourceQuote: "Audit report ships by Friday.",
+      normalizedClaim: "Example Protocol will publish its audit report by Friday.",
+      deliverable: "Audit report",
+      deadlineText: "by Friday",
+      deadlineAt: "2026-04-03T23:59:59.000Z",
       deadlineTimezone: "UTC",
       deadlineConfidence: 0.94,
       extractionConfidence: 0.93
@@ -160,9 +197,9 @@ export function buildFixturePayloads() {
       fixtureKey: "example-reframe-review",
       proposedStatus: "REFRAMED",
       reason:
-        "Official follow-up changed the scope from a public beta launch to a staged waitlist rollout.",
+        "Official follow-up changed the scope from a full V2 launch to a staged preview rollout.",
       rationale:
-        "Official follow-up changed the scope from a public beta launch to a staged waitlist rollout."
+        "Official follow-up changed the scope from a full V2 launch to a staged preview rollout."
     } satisfies FixtureReviewPayload,
     heyanonEvidencePayload: {
       fixtureKey: "example-heyanon-evidence-review",
@@ -469,18 +506,56 @@ async function ensureEvidence(input: {
   });
 }
 
+async function cleanupLegacyFixtures() {
+  await prisma.reviewItem.deleteMany({
+    where: {
+      reason: {
+        in: LEGACY_FIXTURE_REASONS
+      }
+    }
+  });
+
+  const legacyClaims = await prisma.claim.findMany({
+    where: {
+      publicSlug: {
+        in: LEGACY_FIXTURE_CLAIM_SLUGS
+      }
+    },
+    select: { id: true }
+  });
+
+  if (legacyClaims.length === 0) {
+    return;
+  }
+
+  const claimIds = legacyClaims.map((claim) => claim.id);
+  await prisma.statusEvent.deleteMany({ where: { claimId: { in: claimIds } } });
+  await prisma.evidence.deleteMany({ where: { claimId: { in: claimIds } } });
+  await prisma.botReply.deleteMany({ where: { claimId: { in: claimIds } } });
+  await prisma.heyAnonQuery.deleteMany({ where: { claimId: { in: claimIds } } });
+  await prisma.claim.deleteMany({ where: { id: { in: claimIds } } });
+}
+
 export async function runFixtureWorker() {
   assertDatabaseConfigured();
+  await cleanupLegacyFixtures();
 
   const { project, founder, projectActor } = await ensureProjectAndActors();
   const payloads = buildFixturePayloads();
 
   const clockableSource = await upsertSourcePost({
-    platformPostId: FIXTURE_IDS.clockablePostId,
+    platformPostId: FIXTURE_IDS.approvedOpenClaimPostId,
     authorId: founder.id,
     handle: founder.handle,
     text: "V2 ships next week.",
     postedAt: payloads.clockablePostedAt
+  });
+  const pendingClaimCreateSource = await upsertSourcePost({
+    platformPostId: FIXTURE_IDS.pendingClaimCreatePostId,
+    authorId: founder.id,
+    handle: founder.handle,
+    text: "Updated docs ship by Friday.",
+    postedAt: payloads.pendingClaimCreatePostedAt
   });
   const notClockableSource = await upsertSourcePost({
     platformPostId: FIXTURE_IDS.notClockablePostId,
@@ -500,14 +575,14 @@ export async function runFixtureWorker() {
     platformPostId: FIXTURE_IDS.deliveredPromisePostId,
     authorId: projectActor.id,
     handle: projectActor.handle,
-    text: "Public beta ships by April 20.",
+    text: "Audit report ships by Friday.",
     postedAt: payloads.deliveredPromisePostedAt
   });
   const deliveredProofSource = await upsertSourcePost({
     platformPostId: FIXTURE_IDS.deliveredProofPostId,
     authorId: projectActor.id,
     handle: projectActor.handle,
-    text: "Public beta is live with docs and access links.",
+    text: "The audit report is now live with the full PDF and summary thread.",
     postedAt: payloads.deliveredProofPostedAt,
     parentPlatformPostId: FIXTURE_IDS.deliveredPromisePostId
   });
@@ -515,15 +590,15 @@ export async function runFixtureWorker() {
     platformPostId: FIXTURE_IDS.reframePostId,
     authorId: projectActor.id,
     handle: projectActor.handle,
-    text: "We are moving the public beta into a staged waitlist rollout first.",
+    text: "We are moving the V2 launch into a staged preview rollout first.",
     postedAt: payloads.reframePostedAt,
-    parentPlatformPostId: FIXTURE_IDS.deliveredPromisePostId
+    parentPlatformPostId: FIXTURE_IDS.approvedOpenClaimPostId
   });
 
   await ensureTrigger({
-    triggerId: FIXTURE_IDS.triggerClockableId,
-    triggerSourcePostId: clockableSource.id,
-    targetSourcePostId: clockableSource.id,
+    triggerId: FIXTURE_IDS.triggerPendingClaimCreateId,
+    triggerSourcePostId: pendingClaimCreateSource.id,
+    targetSourcePostId: pendingClaimCreateSource.id,
     phrase: "clock this",
     requestedByHandle: "fixturewatch",
     status: "REVIEW_CREATED"
@@ -546,19 +621,96 @@ export async function runFixtureWorker() {
     status: "REVIEW_CREATED"
   });
 
+  const openClaimSlug = createClaimSlug(
+    PROJECT_NAME,
+    String(payloads.approvedOpenClaim.normalizedClaim)
+  );
+  const openClaim = await prisma.claim.upsert({
+    where: { publicSlug: openClaimSlug },
+    update: {
+      projectId: project.id,
+      actorId: founder.id,
+      sourcePostId: clockableSource.id,
+      status: "OPEN",
+      normalizedClaim: String(payloads.approvedOpenClaim.normalizedClaim),
+      sourceQuote: String(payloads.approvedOpenClaim.sourceQuote),
+      deliverable: String(payloads.approvedOpenClaim.deliverable),
+      deadlineText: String(payloads.approvedOpenClaim.deadlineText),
+      deadlineAt: new Date(String(payloads.approvedOpenClaim.deadlineAt)),
+      deadlineTimezone: String(payloads.approvedOpenClaim.deadlineTimezone),
+      deadlineConfidence: Number(payloads.approvedOpenClaim.deadlineConfidence),
+      extractionConfidence: Number(payloads.approvedOpenClaim.extractionConfidence),
+      deliveryCriteriaJson: toJsonArray(
+        payloads.approvedOpenClaim.deliveryCriteria
+      ),
+      nonDeliveryCriteriaJson: toJsonArray(
+        payloads.approvedOpenClaim.nonDeliveryCriteria
+      ),
+      ambiguityNotesJson: [],
+      relatedClaimIdsJson: [],
+      heyAnonContextJson: {
+        mocked: true,
+        source: "fixtureWorker"
+      }
+    },
+    create: {
+      publicSlug: openClaimSlug,
+      projectId: project.id,
+      actorId: founder.id,
+      sourcePostId: clockableSource.id,
+      canonicalHash: computeClaimCanonicalHash({
+        actorId: founder.id,
+        projectId: project.id,
+        normalizedClaim: String(payloads.approvedOpenClaim.normalizedClaim),
+        deliverable: String(payloads.approvedOpenClaim.deliverable),
+        deadlineText: String(payloads.approvedOpenClaim.deadlineText),
+        deadlineAt: String(payloads.approvedOpenClaim.deadlineAt),
+        sourcePostId: clockableSource.id
+      }),
+      status: "OPEN",
+      normalizedClaim: String(payloads.approvedOpenClaim.normalizedClaim),
+      sourceQuote: String(payloads.approvedOpenClaim.sourceQuote),
+      deliverable: String(payloads.approvedOpenClaim.deliverable),
+      deadlineText: String(payloads.approvedOpenClaim.deadlineText),
+      deadlineAt: new Date(String(payloads.approvedOpenClaim.deadlineAt)),
+      deadlineTimezone: String(payloads.approvedOpenClaim.deadlineTimezone),
+      deadlineConfidence: Number(payloads.approvedOpenClaim.deadlineConfidence),
+      extractionConfidence: Number(payloads.approvedOpenClaim.extractionConfidence),
+      deliveryCriteriaJson: toJsonArray(
+        payloads.approvedOpenClaim.deliveryCriteria
+      ),
+      nonDeliveryCriteriaJson: toJsonArray(
+        payloads.approvedOpenClaim.nonDeliveryCriteria
+      ),
+      ambiguityNotesJson: [],
+      relatedClaimIdsJson: [],
+      heyAnonContextJson: {
+        mocked: true,
+        source: "fixtureWorker"
+      }
+    }
+  });
+
+  await ensureStatusEvent({
+    claimId: openClaim.id,
+    toStatus: "OPEN",
+    reason: "Fixture-approved public receipt for Example Protocol V2.",
+    actorType: "ADMIN"
+  });
+
   await ensureReviewItem({
     kind: "CLAIM_CREATE",
     reason: FIXTURE_IDS.claimCreateReason,
     payloadJson: {
-      ...payloads.clockableReviewPayload,
+      ...payloads.pendingClaimCreateReviewPayload,
       projectId: project.id,
       actorId: founder.id,
-      sourcePostId: clockableSource.id,
+      sourcePostId: pendingClaimCreateSource.id,
       triggerId: (await prisma.trigger.findUnique({
         where: {
           platform_platformTriggerPostId: {
             platform: "X",
-            platformTriggerPostId: FIXTURE_IDS.triggerClockableId
+            platformTriggerPostId: FIXTURE_IDS.triggerPendingClaimCreateId
           }
         }
       }))?.id
@@ -602,12 +754,12 @@ export async function runFixtureWorker() {
       deadlineConfidence: payloads.deliveredClaim.deadlineConfidence,
       extractionConfidence: payloads.deliveredClaim.extractionConfidence,
       deliveryCriteriaJson: [
-        "A public beta release is announced or accessible.",
-        "The release is attributable to Example Protocol."
+        "The public audit report is published or linked.",
+        "The report is attributable to Example Protocol."
       ],
       nonDeliveryCriteriaJson: [
-        "A teaser or waitlist-only update without public beta access.",
-        "A delay or scope change without the public beta release."
+        "A teaser or summary thread without the audit report itself.",
+        "A delay or scope change without the report being published."
       ],
       ambiguityNotesJson: [],
       relatedClaimIdsJson: [],
@@ -640,12 +792,12 @@ export async function runFixtureWorker() {
       deadlineConfidence: payloads.deliveredClaim.deadlineConfidence,
       extractionConfidence: payloads.deliveredClaim.extractionConfidence,
       deliveryCriteriaJson: [
-        "A public beta release is announced or accessible.",
-        "The release is attributable to Example Protocol."
+        "The public audit report is published or linked.",
+        "The report is attributable to Example Protocol."
       ],
       nonDeliveryCriteriaJson: [
-        "A teaser or waitlist-only update without public beta access.",
-        "A delay or scope change without the public beta release."
+        "A teaser or summary thread without the audit report itself.",
+        "A delay or scope change without the report being published."
       ],
       ambiguityNotesJson: [],
       relatedClaimIdsJson: [],
@@ -661,7 +813,7 @@ export async function runFixtureWorker() {
     sourcePostId: deliveredProofSource.id,
     evidenceType: "DELIVERY_PROOF",
     url: deliveredProofSource.url ?? undefined,
-    summary: "Official account published public beta access links before the deadline.",
+    summary: "Official account published the audit report link before the recorded deadline.",
     occurredAt: payloads.deliveredProofPostedAt,
     confidence: 0.96,
     rawJson: {
@@ -673,14 +825,14 @@ export async function runFixtureWorker() {
   await ensureStatusEvent({
     claimId: deliveredClaim.id,
     toStatus: "OPEN",
-    reason: "Original public beta claim captured for Example Protocol.",
+    reason: "Original audit report claim captured for Example Protocol.",
     actorType: "ADMIN"
   });
   await ensureStatusEvent({
     claimId: deliveredClaim.id,
     fromStatus: "OPEN",
     toStatus: "DELIVERED",
-    reason: "Public beta access links were posted before the recorded deadline.",
+    reason: "The audit report was published before the recorded deadline.",
     actorType: "ADMIN",
     evidenceJson: {
       sourcePostId: deliveredProofSource.id
@@ -692,7 +844,7 @@ export async function runFixtureWorker() {
     reason: FIXTURE_IDS.reframeReason,
     payloadJson: {
       ...payloads.reframeReviewPayload,
-      claimId: deliveredClaim.id,
+      claimId: openClaim.id,
       sourcePostId: reframeSource.id
     }
   });
@@ -709,9 +861,10 @@ export async function runFixtureWorker() {
   return {
     ok: true,
     projectSlug: createProjectSlug(PROJECT_NAME),
+    approvedOpenClaimSlug: openClaim.publicSlug,
     claimDraftSlug: createClaimSlug(
       PROJECT_NAME,
-      String(payloads.clockableReviewPayload.normalizedClaim)
+      String(payloads.pendingClaimCreateReviewPayload.normalizedClaim)
     ),
     deliveredClaimSlug: deliveredClaim.publicSlug,
     reviewItems: {

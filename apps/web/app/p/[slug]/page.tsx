@@ -27,6 +27,10 @@ export default async function ProjectPage({
         {record.project.description ? <p>{record.project.description}</p> : null}
         {record.project.officialXHandle ? <p>Official X: @{record.project.officialXHandle}</p> : null}
         <p>{record.factualSummary}</p>
+        <p>
+          This is a factual public record of time-bounded claims associated with
+          this project. It is not a trust score.
+        </p>
         <div className="stats">
           {Object.entries(record.countsByStatus).map(([label, count]) => (
             <span key={label} className="stat">
@@ -36,13 +40,22 @@ export default async function ProjectPage({
         </div>
       </section>
       <SectionShell
-        title="Due soon"
-        body="Open claims that are approaching a deadline window."
+        title="Delivery record"
+        body="Counts and recent claim activity are shown without rankings, reputation labels, or accusation language."
       >
+        <div className="panel">
+          <ul className="simple-list">
+            <li>Project: {record.project.name}</li>
+            <li>Official X: {record.project.officialXHandle ? `@${record.project.officialXHandle}` : "Not set"}</li>
+            <li>Public record URL: <a href={record.publicUrl}>{record.publicUrl}</a></li>
+          </ul>
+        </div>
+      </SectionShell>
+      <SectionShell title="Due soon" body="Open claims that are approaching a deadline window.">
         <ClaimGrid claims={record.dueSoon} />
       </SectionShell>
-      <SectionShell title="Open claims">
-        <ClaimGrid claims={record.openClaims} />
+      <SectionShell title="Latest open claims">
+        <ClaimGrid claims={record.openClaims.slice(0, 6)} />
       </SectionShell>
       <SectionShell title="Latest delivered">
         <ClaimGrid claims={record.deliveredClaims} />
@@ -59,11 +72,6 @@ export default async function ProjectPage({
               </li>
             ))}
           </ul>
-        </div>
-      </SectionShell>
-      <SectionShell title="Public record URL">
-        <div className="panel">
-          <a href={record.publicUrl}>{record.publicUrl}</a>
         </div>
       </SectionShell>
       <SectionShell title="All claims">

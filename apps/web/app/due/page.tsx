@@ -14,7 +14,8 @@ export default async function DuePage() {
       <section className="hero">
         <span className="tab">Due digest</span>
         <h1>Claims on the clock.</h1>
-        <p>Due today, due this week, and overdue claims pending review.</p>
+        <p>Due today, due this week, overdue pending review, and recent outcomes.</p>
+        <p>{buckets.digest}</p>
       </section>
       <SectionShell title="Due today">
         <ClaimGrid claims={buckets.today} />
@@ -22,8 +23,14 @@ export default async function DuePage() {
       <SectionShell title="Due this week">
         <ClaimGrid claims={buckets.thisWeek} />
       </SectionShell>
-      <SectionShell title="Overdue pending review">
+      <SectionShell title="Overdue pending review" body="Open claims whose deadlines have passed and may need a reviewed status update.">
         <ClaimGrid claims={buckets.overdue} />
+      </SectionShell>
+      <SectionShell title="Recently delivered">
+        <ClaimGrid claims={buckets.recentlyDelivered} />
+      </SectionShell>
+      <SectionShell title="Recently reframed">
+        <ClaimGrid claims={buckets.recentlyReframed} />
       </SectionShell>
     </PageShell>
   );

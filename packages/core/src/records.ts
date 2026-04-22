@@ -60,6 +60,14 @@ export function factualSummaryForCounts(
   ].join(", ");
 }
 
+function pluralize(count: number, singular: string, plural = `${singular}s`): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+export function buildRecordCopy(counts: CountsByStatus): string {
+  return `${pluralize(counts.OPEN, "open claim")}, ${pluralize(counts.DELIVERED, "delivered claim")}, and ${pluralize(counts.SLIPPED, "slipped claim")} in the public record.`;
+}
+
 export function buildHudExport(input: {
   projectSlug: string;
   projectName: string;
@@ -76,6 +84,7 @@ export function buildHudExport(input: {
   latestClaim: { slug: string; status: ClaimStatus; claim: string } | null;
   latestStatusChange: { toStatus: ClaimStatus; at: string } | null;
   publicRecordUrl: string;
+  recordCopy: string;
   riskCopy: string;
 } {
   const counts = countClaimsByStatus(input.claims);
@@ -83,6 +92,7 @@ export function buildHudExport(input: {
   const latestStatusChange = input.claims
     .flatMap((claim) => claim.statusEvents)
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+  const recordCopy = buildRecordCopy(counts);
 
   return {
     projectSlug: input.projectSlug,
@@ -106,10 +116,7 @@ export function buildHudExport(input: {
         }
       : null,
     publicRecordUrl: `${input.baseUrl.replace(/\/$/, "")}/p/${input.projectSlug}`,
-    riskCopy:
-      counts.SLIPPED > 0
-        ? "Public record shows slipped commitments that may need review."
-        : "Public record shows current and delivered commitments."
+    recordCopy,
+    riskCopy: recordCopy
   };
 }
-
