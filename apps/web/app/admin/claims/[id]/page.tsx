@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { PageShell } from "../../../../components/PageShell";
 import { prisma } from "@clocked/db";
+import { getAdminUiState } from "../../../../lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export default async function AdminClaimPage({
   const query = (await searchParams) ?? {};
   const adminPassword =
     typeof query.password === "string" ? query.password : undefined;
+  const adminUiState = getAdminUiState();
   const claim = await prisma.claim.findUnique({
     where: { id },
     include: { project: true, actor: true, evidences: true, statusEvents: true }
@@ -30,6 +32,7 @@ export default async function AdminClaimPage({
       <section className="hero">
         <span className="tab">Claim admin</span>
         <h1>{claim.normalizedClaim}</h1>
+        <p>{adminUiState.bannerBody}</p>
       </section>
       <div className="detail-grid">
         <div className="panel">

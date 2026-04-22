@@ -38,18 +38,18 @@ CLOCKED exposes a public-safe MCP surface for claims, project records, actor rec
 ## Example Calls
 
 ```bash
-curl http://localhost:8787/health
-curl http://localhost:8787/manifest
-curl -X POST http://localhost:8787/tools \
+curl ${CLOCKED_MCP_BASE_URL:-http://localhost:8787}/health
+curl ${CLOCKED_MCP_BASE_URL:-http://localhost:8787}/manifest
+curl -X POST ${CLOCKED_MCP_BASE_URL:-http://localhost:8787}/tools \
   -H 'content-type: application/json' \
   -d '{"tool":"clocked.extract_claim_from_text","input":{"text":"V2 ships next week.","sourcePostedAt":"2026-04-14T10:00:00.000Z","sourceAuthorHandle":"examplefounder","projectName":"Example Protocol"}}'
-curl -X POST http://localhost:8787/tools \
+curl -X POST ${CLOCKED_MCP_BASE_URL:-http://localhost:8787}/tools \
   -H 'content-type: application/json' \
   -d '{"tool":"clocked.search_claims","input":{"projectSlug":"example-protocol","limit":10}}'
-curl -X POST http://localhost:8787/tools \
+curl -X POST ${CLOCKED_MCP_BASE_URL:-http://localhost:8787}/tools \
   -H 'content-type: application/json' \
-  -d '{"tool":"clocked.get_claim","input":{"slug":"example-protocol-example-protocol-will-ship-v2-next-week"}}'
-curl -X POST http://localhost:8787/tools \
+  -d '{"tool":"clocked.get_claim","input":{"slug":"example-protocol-will-ship-v2-next-week"}}'
+curl -X POST ${CLOCKED_MCP_BASE_URL:-http://localhost:8787}/tools \
   -H 'content-type: application/json' \
   -d '{"tool":"clocked.get_project_record","input":{"projectSlug":"example-protocol"}}'
 ```

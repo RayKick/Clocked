@@ -1,9 +1,11 @@
 import React from "react";
+import Link from "next/link";
 import { SectionShell } from "@clocked/ui";
 
 import { AdminReviewCard } from "../../../components/AdminReviewCard";
 import { PageShell } from "../../../components/PageShell";
 import { getAdminReviewItems } from "../../../lib/data";
+import { getAdminUiState } from "../../../lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +18,7 @@ export default async function AdminReviewPage({
   const adminPassword =
     typeof params.password === "string" ? params.password : undefined;
   const reviewItems = await getAdminReviewItems();
+  const adminUiState = getAdminUiState();
 
   return (
     <PageShell>
@@ -26,12 +29,21 @@ export default async function AdminReviewPage({
           Dry-run mode: approvals create local records only. X posting and live
           HeyAnon/Gemma calls are disabled.
         </p>
+        <div className="panel" style={{ marginTop: "1rem" }}>
+          <strong>{adminUiState.bannerTitle}</strong>
+          <p style={{ marginBottom: 0 }}>{adminUiState.bannerBody}</p>
+        </div>
       </section>
       <SectionShell
         eyebrow="Pending"
         title="Admin review queue"
         body="Approving CLAIM_CREATE turns a reviewed draft into a public claim and creates a draft bot reply. Approval does not post externally."
       >
+        <div className="tabs" style={{ marginBottom: "1rem" }}>
+          <Link href="/admin/ingest" className="tab">
+            Create review item from X URL
+          </Link>
+        </div>
         <div className="card-grid">
           {reviewItems.map((item) => (
             <AdminReviewCard

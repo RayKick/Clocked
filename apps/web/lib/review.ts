@@ -48,6 +48,13 @@ type ReviewActionResult =
 
 type DbClient = Prisma.TransactionClient | typeof prisma;
 
+const LEGACY_REWARDS_DEMO_CLAIM = {
+  oldSlug: "example-protocol-rewards-release-is-promised-by-by-friday",
+  oldNormalizedClaim: "Rewards release is promised by by friday.",
+  newSlug: "example-protocol-will-ship-rewards-dashboard-by-friday",
+  newNormalizedClaim: "Example Protocol will ship the rewards dashboard by Friday."
+} as const;
+
 const claimStatusSchema = z.enum([
   "OPEN",
   "DELIVERED",
@@ -58,7 +65,7 @@ const claimStatusSchema = z.enum([
 ]);
 
 const claimCreatePayloadSchema = z.object({
-  verdict: z.literal("CLOCKABLE"),
+  verdict: z.enum(["CLOCKABLE", "NEEDS_REVIEW"]),
   projectName: z.string().min(1),
   projectSlug: z.string().optional(),
   projectId: z.string().optional(),
@@ -302,6 +309,39 @@ async function approveClaimCreate(
     const sourcePost = await ensureSourcePost(tx, payload, actor?.id ?? null);
     const publicSlug = createClaimSlug(project?.name ?? "claim", payload.normalizedClaim);
 
+    if (publicSlug === LEGACY_REWARDS_DEMO_CLAIM.newSlug) {
+      const legacyClaim = await tx.claim.findFirst({
+        where: {
+          OR: [
+            { publicSlug: LEGACY_REWARDS_DEMO_CLAIM.oldSlug },
+            { normalizedClaim: LEGACY_REWARDS_DEMO_CLAIM.oldNormalizedClaim }
+          ]
+        }
+      });
+
+      if (legacyClaim) {
+        const cleanClaimAlreadyExists = await tx.claim.findUnique({
+          where: { publicSlug: publicSlug }
+        });
+
+        if (cleanClaimAlreadyExists && cleanClaimAlreadyExists.id !== legacyClaim.id) {
+          await tx.statusEvent.deleteMany({ where: { claimId: legacyClaim.id } });
+          await tx.evidence.deleteMany({ where: { claimId: legacyClaim.id } });
+          await tx.botReply.deleteMany({ where: { claimId: legacyClaim.id } });
+          await tx.heyAnonQuery.deleteMany({ where: { claimId: legacyClaim.id } });
+          await tx.claim.delete({ where: { id: legacyClaim.id } });
+        } else {
+          await tx.claim.update({
+            where: { id: legacyClaim.id },
+            data: {
+              publicSlug,
+              normalizedClaim: LEGACY_REWARDS_DEMO_CLAIM.newNormalizedClaim
+            }
+          });
+        }
+      }
+    }
+
     const claim = await tx.claim.upsert({
       where: { publicSlug },
       update: {
@@ -398,17 +438,25 @@ async function approveClaimCreate(
       }
     });
     const botReply =
-      existingBotReply ??
-      (await tx.botReply.create({
-        data: {
-          claimId: claim.id,
-          triggerId: payload.triggerId ?? null,
-          platform: "X",
-          replyToPlatformPostId: payload.replyToPlatformPostId ?? null,
-          proposedText: replyText,
-          status: "DRAFT"
-        }
-      }));
+      existingBotReply
+        ? await tx.botReply.update({
+            where: { id: existingBotReply.id },
+            data: {
+              triggerId: payload.triggerId ?? null,
+              replyToPlatformPostId: payload.replyToPlatformPostId ?? null,
+              proposedText: replyText
+            }
+          })
+        : await tx.botReply.create({
+            data: {
+              claimId: claim.id,
+              triggerId: payload.triggerId ?? null,
+              platform: "X",
+              replyToPlatformPostId: payload.replyToPlatformPostId ?? null,
+              proposedText: replyText,
+              status: "DRAFT"
+            }
+          });
 
     await tx.reviewItem.update({
       where: { id: reviewItemId },
@@ -569,6 +617,12 @@ export async function approveReviewItem(reviewItemId: string): Promise<ReviewAct
 
   switch (reviewItem.kind) {
     case ReviewKind.CLAIM_CREATE:
+      if (payload.verdict === "NOT_CLOCKABLE") {
+        throw new ReviewActionError(
+          409,
+          "NOT_CLOCKABLE review items cannot be approved into public claims."
+        );
+      }
       return approveClaimCreate(reviewItem.id, claimCreatePayloadSchema.parse(payload));
     case ReviewKind.STATUS_CHANGE:
       return approveStatusChange(reviewItem.id, statusChangePayloadSchema.parse(payload));

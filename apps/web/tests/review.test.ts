@@ -5,11 +5,12 @@ const prismaMock = vi.hoisted(() => {
     project: { findUnique: vi.fn(), upsert: vi.fn() },
     actor: { findUnique: vi.fn(), upsert: vi.fn() },
     sourcePost: { findUnique: vi.fn(), upsert: vi.fn(), create: vi.fn() },
-    claim: { upsert: vi.fn(), findUnique: vi.fn(), update: vi.fn() },
+    claim: { upsert: vi.fn(), findUnique: vi.fn(), findFirst: vi.fn(), update: vi.fn(), delete: vi.fn() },
     statusEvent: { findFirst: vi.fn(), create: vi.fn() },
     botReply: { findFirst: vi.fn(), create: vi.fn(), findUnique: vi.fn(), update: vi.fn() },
     evidence: { create: vi.fn() },
-    reviewItem: { findUnique: vi.fn(), update: vi.fn() }
+    reviewItem: { findUnique: vi.fn(), update: vi.fn() },
+    heyAnonQuery: { deleteMany: vi.fn() }
   };
 
   return {
@@ -61,7 +62,7 @@ describe("review actions", () => {
     prismaMock.project.upsert.mockResolvedValue({ id: "project-1", slug: "example-protocol", name: "Example Protocol" });
     prismaMock.actor.upsert.mockResolvedValue({ id: "actor-1", handle: "examplefounder" });
     prismaMock.sourcePost.create.mockResolvedValue({ id: "source-1" });
-    prismaMock.claim.upsert.mockResolvedValue({ id: "claim-1", publicSlug: "example-protocol-example-protocol-will-ship-v2-next-week", normalizedClaim: "Example Protocol will ship V2 next week.", deadlineText: "next week" });
+    prismaMock.claim.upsert.mockResolvedValue({ id: "claim-1", publicSlug: "example-protocol-will-ship-v2-next-week", normalizedClaim: "Example Protocol will ship V2 next week.", deadlineText: "next week" });
     prismaMock.statusEvent.findFirst.mockResolvedValue(null);
     prismaMock.statusEvent.create.mockResolvedValue({ id: "status-event-1" });
     prismaMock.botReply.findFirst.mockResolvedValue(null);
@@ -75,13 +76,74 @@ describe("review actions", () => {
       action: "CLAIM_CREATE",
       reviewItemId: "review-1",
       claimId: "claim-1",
-      publicSlug: "example-protocol-example-protocol-will-ship-v2-next-week",
+      publicSlug: "example-protocol-will-ship-v2-next-week",
       botReplyId: "bot-reply-1"
     });
       expect(prismaMock.botReply.create).toHaveBeenCalledOnce();
     },
     10_000
   );
+
+  it("creates a clean slug for the rewards dashboard ingest demo", async () => {
+    prismaMock.reviewItem.findUnique.mockResolvedValue({
+      id: "review-rewards",
+      kind: "CLAIM_CREATE",
+      status: "PENDING",
+      payloadJson: {
+        verdict: "CLOCKABLE",
+        projectName: "Example Protocol",
+        projectSlug: "example-protocol",
+        actorHandle: "examplefounder",
+        normalizedClaim: "Example Protocol will ship the rewards dashboard by Friday.",
+        sourceQuote: "Rewards dashboard ships by Friday.",
+        deliverable: "rewards dashboard",
+        deadlineText: "by Friday",
+        deadlineAt: "2026-04-24T23:59:59.999Z",
+        deadlineConfidence: 0.82,
+        extractionConfidence: 0.9,
+        deliveryCriteria: [
+          "A public rewards dashboard is announced or accessible.",
+          "The release is attributable to Example Protocol."
+        ],
+        nonDeliveryCriteria: [
+          "A teaser, waitlist, or vague update without a public rewards dashboard.",
+          "A delayed or reframed announcement without delivery."
+        ]
+      }
+    });
+    prismaMock.project.upsert.mockResolvedValue({
+      id: "project-1",
+      slug: "example-protocol",
+      name: "Example Protocol"
+    });
+    prismaMock.actor.upsert.mockResolvedValue({ id: "actor-1", handle: "examplefounder" });
+    prismaMock.sourcePost.create.mockResolvedValue({ id: "source-1" });
+    prismaMock.claim.findFirst.mockResolvedValue(null);
+    prismaMock.claim.findUnique.mockResolvedValue(null);
+    prismaMock.claim.upsert.mockResolvedValue({
+      id: "claim-rewards",
+      publicSlug: "example-protocol-will-ship-rewards-dashboard-by-friday",
+      normalizedClaim: "Example Protocol will ship the rewards dashboard by Friday.",
+      deadlineText: "by Friday"
+    });
+    prismaMock.statusEvent.findFirst.mockResolvedValue(null);
+    prismaMock.statusEvent.create.mockResolvedValue({ id: "status-event-rewards" });
+    prismaMock.botReply.findFirst.mockResolvedValue(null);
+    prismaMock.botReply.create.mockResolvedValue({ id: "bot-reply-rewards" });
+    prismaMock.reviewItem.update.mockResolvedValue({ id: "review-rewards" });
+
+    const { approveReviewItem } = await import("../lib/review");
+    const result = await approveReviewItem("review-rewards");
+
+    expect(result.action).toBe("CLAIM_CREATE");
+    if (result.action !== "CLAIM_CREATE") {
+      throw new Error("Expected CLAIM_CREATE result");
+    }
+    expect(result).toMatchObject({
+      publicSlug: "example-protocol-will-ship-rewards-dashboard-by-friday"
+    });
+    expect(result.publicSlug).not.toContain("by-by");
+  });
 
   it("approves BOT_REPLY without posting externally", async () => {
     prismaMock.reviewItem.findUnique.mockResolvedValue({

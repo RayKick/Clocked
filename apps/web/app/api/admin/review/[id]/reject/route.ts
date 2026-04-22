@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireAdmin } from "../../../../../../lib/env";
+import { AdminAuthError, requireAdmin } from "../../../../../../lib/env";
 import {
   ReviewActionError,
   rejectReviewItem
@@ -45,7 +45,7 @@ export async function POST(
     if (error instanceof Error && error.name === "ZodError") {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
-    if (error instanceof Error && error.message === "Unauthorized") {
+    if (error instanceof AdminAuthError) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

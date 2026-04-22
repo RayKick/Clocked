@@ -86,6 +86,27 @@ export function canPostApprovedBotReply(botReply: XBotReply, environment = readX
   return { ok: true };
 }
 
+export function canReadFromX(environment = readXEnvironment()): { ok: boolean; reason: string } {
+  if (!environment.X_READ_ENABLED) {
+    return {
+      ok: false,
+      reason: "X_READ_ENABLED=false blocks live X reads."
+    };
+  }
+
+  if (!environment.X_API_BEARER_TOKEN) {
+    return {
+      ok: false,
+      reason: "Missing X read credentials."
+    };
+  }
+
+  return {
+    ok: true,
+    reason: "X read enabled."
+  };
+}
+
 export async function postApprovedBotReply(params: {
   client: XClient;
   botReply: XBotReply;

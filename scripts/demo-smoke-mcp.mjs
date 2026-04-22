@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { getMcpBaseUrl } from "./_base-url.mjs";
 
 function loadEnvFile() {
   const envPath = resolve(process.cwd(), ".env");
@@ -39,9 +40,10 @@ async function assertJson(url, init) {
 
 loadEnvFile();
 
-const baseUrl = process.env.CLOCKED_MCP_BASE_URL ?? "http://localhost:8787";
+const baseUrl = getMcpBaseUrl(process.env);
 
 try {
+  console.log(`Using MCP base URL: ${baseUrl}`);
   await assertJson(`${baseUrl}/health`);
   await assertJson(`${baseUrl}/manifest`);
   await assertJson(`${baseUrl}/tools`, {
@@ -70,7 +72,7 @@ try {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
       tool: "clocked.get_claim",
-      input: { slug: "example-protocol-example-protocol-will-ship-v2-next-week" }
+      input: { slug: "example-protocol-will-ship-v2-next-week" }
     })
   });
   await assertJson(`${baseUrl}/tools`, {

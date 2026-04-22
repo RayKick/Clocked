@@ -14,7 +14,12 @@ const LEGACY_FIXTURE_REASONS = [
   "Fixture review item: claim create for Example Protocol V2."
 ];
 const LEGACY_FIXTURE_CLAIM_SLUGS = [
-  "example-protocol-example-protocol-will-publish-the-public-beta-by"
+  "example-protocol-example-protocol-will-publish-the-public-beta-by",
+  "example-protocol-example-protocol-will-ship-v2-next-week",
+  "example-protocol-rewards-release-is-promised-by-by-friday"
+];
+const LEGACY_FIXTURE_NORMALIZED_CLAIMS = [
+  "Rewards release is promised by by friday."
 ];
 
 type FixtureReviewPayload = Record<string, unknown>;
@@ -517,9 +522,18 @@ async function cleanupLegacyFixtures() {
 
   const legacyClaims = await prisma.claim.findMany({
     where: {
-      publicSlug: {
-        in: LEGACY_FIXTURE_CLAIM_SLUGS
-      }
+      OR: [
+        {
+          publicSlug: {
+            in: LEGACY_FIXTURE_CLAIM_SLUGS
+          }
+        },
+        {
+          normalizedClaim: {
+            in: LEGACY_FIXTURE_NORMALIZED_CLAIMS
+          }
+        }
+      ]
     },
     select: { id: true }
   });
@@ -534,6 +548,70 @@ async function cleanupLegacyFixtures() {
   await prisma.botReply.deleteMany({ where: { claimId: { in: claimIds } } });
   await prisma.heyAnonQuery.deleteMany({ where: { claimId: { in: claimIds } } });
   await prisma.claim.deleteMany({ where: { id: { in: claimIds } } });
+}
+
+type EnsureClaimInput = {
+  publicSlug: string;
+  sourcePostId: string;
+  canonicalHash: string;
+  projectId: string;
+  actorId: string;
+  status: "OPEN" | "DELIVERED" | "SLIPPED" | "REFRAMED" | "SUPERSEDED" | "AMBIGUOUS";
+  normalizedClaim: string;
+  sourceQuote: string;
+  deliverable: string;
+  deadlineText: string;
+  deadlineAt: string;
+  deadlineTimezone: string;
+  deadlineConfidence: number;
+  extractionConfidence: number;
+  deliveryCriteriaJson: string[];
+  nonDeliveryCriteriaJson: string[];
+  ambiguityNotesJson: string[];
+  relatedClaimIdsJson: string[];
+  heyAnonContextJson: Prisma.InputJsonValue;
+};
+
+async function ensureClaim(input: EnsureClaimInput) {
+  const existing = await prisma.claim.findFirst({
+    where: {
+      sourcePostId: input.sourcePostId,
+      canonicalHash: input.canonicalHash
+    }
+  });
+
+  const data = {
+    publicSlug: input.publicSlug,
+    projectId: input.projectId,
+    actorId: input.actorId,
+    sourcePostId: input.sourcePostId,
+    canonicalHash: input.canonicalHash,
+    status: input.status,
+    normalizedClaim: input.normalizedClaim,
+    sourceQuote: input.sourceQuote,
+    deliverable: input.deliverable,
+    deadlineText: input.deadlineText,
+    deadlineAt: new Date(input.deadlineAt),
+    deadlineTimezone: input.deadlineTimezone,
+    deadlineConfidence: input.deadlineConfidence,
+    extractionConfidence: input.extractionConfidence,
+    deliveryCriteriaJson: input.deliveryCriteriaJson,
+    nonDeliveryCriteriaJson: input.nonDeliveryCriteriaJson,
+    ambiguityNotesJson: input.ambiguityNotesJson,
+    relatedClaimIdsJson: input.relatedClaimIdsJson,
+    heyAnonContextJson: input.heyAnonContextJson
+  };
+
+  if (existing) {
+    return prisma.claim.update({
+      where: { id: existing.id },
+      data
+    });
+  }
+
+  return prisma.claim.create({
+    data
+  });
 }
 
 export async function runFixtureWorker() {
@@ -625,69 +703,37 @@ export async function runFixtureWorker() {
     PROJECT_NAME,
     String(payloads.approvedOpenClaim.normalizedClaim)
   );
-  const openClaim = await prisma.claim.upsert({
-    where: { publicSlug: openClaimSlug },
-    update: {
-      projectId: project.id,
-      actorId: founder.id,
-      sourcePostId: clockableSource.id,
-      status: "OPEN",
-      normalizedClaim: String(payloads.approvedOpenClaim.normalizedClaim),
-      sourceQuote: String(payloads.approvedOpenClaim.sourceQuote),
-      deliverable: String(payloads.approvedOpenClaim.deliverable),
-      deadlineText: String(payloads.approvedOpenClaim.deadlineText),
-      deadlineAt: new Date(String(payloads.approvedOpenClaim.deadlineAt)),
-      deadlineTimezone: String(payloads.approvedOpenClaim.deadlineTimezone),
-      deadlineConfidence: Number(payloads.approvedOpenClaim.deadlineConfidence),
-      extractionConfidence: Number(payloads.approvedOpenClaim.extractionConfidence),
-      deliveryCriteriaJson: toJsonArray(
-        payloads.approvedOpenClaim.deliveryCriteria
-      ),
-      nonDeliveryCriteriaJson: toJsonArray(
-        payloads.approvedOpenClaim.nonDeliveryCriteria
-      ),
-      ambiguityNotesJson: [],
-      relatedClaimIdsJson: [],
-      heyAnonContextJson: {
-        mocked: true,
-        source: "fixtureWorker"
-      }
-    },
-    create: {
-      publicSlug: openClaimSlug,
-      projectId: project.id,
-      actorId: founder.id,
-      sourcePostId: clockableSource.id,
-      canonicalHash: computeClaimCanonicalHash({
-        actorId: founder.id,
-        projectId: project.id,
-        normalizedClaim: String(payloads.approvedOpenClaim.normalizedClaim),
-        deliverable: String(payloads.approvedOpenClaim.deliverable),
-        deadlineText: String(payloads.approvedOpenClaim.deadlineText),
-        deadlineAt: String(payloads.approvedOpenClaim.deadlineAt),
-        sourcePostId: clockableSource.id
-      }),
-      status: "OPEN",
-      normalizedClaim: String(payloads.approvedOpenClaim.normalizedClaim),
-      sourceQuote: String(payloads.approvedOpenClaim.sourceQuote),
-      deliverable: String(payloads.approvedOpenClaim.deliverable),
-      deadlineText: String(payloads.approvedOpenClaim.deadlineText),
-      deadlineAt: new Date(String(payloads.approvedOpenClaim.deadlineAt)),
-      deadlineTimezone: String(payloads.approvedOpenClaim.deadlineTimezone),
-      deadlineConfidence: Number(payloads.approvedOpenClaim.deadlineConfidence),
-      extractionConfidence: Number(payloads.approvedOpenClaim.extractionConfidence),
-      deliveryCriteriaJson: toJsonArray(
-        payloads.approvedOpenClaim.deliveryCriteria
-      ),
-      nonDeliveryCriteriaJson: toJsonArray(
-        payloads.approvedOpenClaim.nonDeliveryCriteria
-      ),
-      ambiguityNotesJson: [],
-      relatedClaimIdsJson: [],
-      heyAnonContextJson: {
-        mocked: true,
-        source: "fixtureWorker"
-      }
+  const openClaimCanonicalHash = computeClaimCanonicalHash({
+    actorId: founder.id,
+    projectId: project.id,
+    normalizedClaim: String(payloads.approvedOpenClaim.normalizedClaim),
+    deliverable: String(payloads.approvedOpenClaim.deliverable),
+    deadlineText: String(payloads.approvedOpenClaim.deadlineText),
+    deadlineAt: String(payloads.approvedOpenClaim.deadlineAt),
+    sourcePostId: clockableSource.id
+  });
+  const openClaim = await ensureClaim({
+    publicSlug: openClaimSlug,
+    projectId: project.id,
+    actorId: founder.id,
+    sourcePostId: clockableSource.id,
+    canonicalHash: openClaimCanonicalHash,
+    status: "OPEN",
+    normalizedClaim: String(payloads.approvedOpenClaim.normalizedClaim),
+    sourceQuote: String(payloads.approvedOpenClaim.sourceQuote),
+    deliverable: String(payloads.approvedOpenClaim.deliverable),
+    deadlineText: String(payloads.approvedOpenClaim.deadlineText),
+    deadlineAt: String(payloads.approvedOpenClaim.deadlineAt),
+    deadlineTimezone: String(payloads.approvedOpenClaim.deadlineTimezone),
+    deadlineConfidence: Number(payloads.approvedOpenClaim.deadlineConfidence),
+    extractionConfidence: Number(payloads.approvedOpenClaim.extractionConfidence),
+    deliveryCriteriaJson: toJsonArray(payloads.approvedOpenClaim.deliveryCriteria),
+    nonDeliveryCriteriaJson: toJsonArray(payloads.approvedOpenClaim.nonDeliveryCriteria),
+    ambiguityNotesJson: [],
+    relatedClaimIdsJson: [],
+    heyAnonContextJson: {
+      mocked: true,
+      source: "fixtureWorker"
     }
   });
 
@@ -738,73 +784,43 @@ export async function runFixtureWorker() {
   });
 
   const deliveredSlug = createClaimSlug(PROJECT_NAME, payloads.deliveredClaim.normalizedClaim);
-  const deliveredClaim = await prisma.claim.upsert({
-    where: { publicSlug: deliveredSlug },
-    update: {
-      projectId: project.id,
-      actorId: projectActor.id,
-      sourcePostId: deliveredPromiseSource.id,
-      status: "DELIVERED",
-      normalizedClaim: payloads.deliveredClaim.normalizedClaim,
-      sourceQuote: payloads.deliveredClaim.sourceQuote,
-      deliverable: payloads.deliveredClaim.deliverable,
-      deadlineText: payloads.deliveredClaim.deadlineText,
-      deadlineAt: new Date(payloads.deliveredClaim.deadlineAt),
-      deadlineTimezone: payloads.deliveredClaim.deadlineTimezone,
-      deadlineConfidence: payloads.deliveredClaim.deadlineConfidence,
-      extractionConfidence: payloads.deliveredClaim.extractionConfidence,
-      deliveryCriteriaJson: [
-        "The public audit report is published or linked.",
-        "The report is attributable to Example Protocol."
-      ],
-      nonDeliveryCriteriaJson: [
-        "A teaser or summary thread without the audit report itself.",
-        "A delay or scope change without the report being published."
-      ],
-      ambiguityNotesJson: [],
-      relatedClaimIdsJson: [],
-      heyAnonContextJson: {
-        mocked: true,
-        source: "fixtureWorker"
-      }
-    },
-    create: {
-      publicSlug: deliveredSlug,
-      projectId: project.id,
-      actorId: projectActor.id,
-      sourcePostId: deliveredPromiseSource.id,
-      canonicalHash: computeClaimCanonicalHash({
-        actorId: projectActor.id,
-        projectId: project.id,
-        normalizedClaim: payloads.deliveredClaim.normalizedClaim,
-        deliverable: payloads.deliveredClaim.deliverable,
-        deadlineText: payloads.deliveredClaim.deadlineText,
-        deadlineAt: payloads.deliveredClaim.deadlineAt,
-        sourcePostId: deliveredPromiseSource.id
-      }),
-      status: "DELIVERED",
-      normalizedClaim: payloads.deliveredClaim.normalizedClaim,
-      sourceQuote: payloads.deliveredClaim.sourceQuote,
-      deliverable: payloads.deliveredClaim.deliverable,
-      deadlineText: payloads.deliveredClaim.deadlineText,
-      deadlineAt: new Date(payloads.deliveredClaim.deadlineAt),
-      deadlineTimezone: payloads.deliveredClaim.deadlineTimezone,
-      deadlineConfidence: payloads.deliveredClaim.deadlineConfidence,
-      extractionConfidence: payloads.deliveredClaim.extractionConfidence,
-      deliveryCriteriaJson: [
-        "The public audit report is published or linked.",
-        "The report is attributable to Example Protocol."
-      ],
-      nonDeliveryCriteriaJson: [
-        "A teaser or summary thread without the audit report itself.",
-        "A delay or scope change without the report being published."
-      ],
-      ambiguityNotesJson: [],
-      relatedClaimIdsJson: [],
-      heyAnonContextJson: {
-        mocked: true,
-        source: "fixtureWorker"
-      }
+  const deliveredCanonicalHash = computeClaimCanonicalHash({
+    actorId: projectActor.id,
+    projectId: project.id,
+    normalizedClaim: payloads.deliveredClaim.normalizedClaim,
+    deliverable: payloads.deliveredClaim.deliverable,
+    deadlineText: payloads.deliveredClaim.deadlineText,
+    deadlineAt: payloads.deliveredClaim.deadlineAt,
+    sourcePostId: deliveredPromiseSource.id
+  });
+  const deliveredClaim = await ensureClaim({
+    publicSlug: deliveredSlug,
+    projectId: project.id,
+    actorId: projectActor.id,
+    sourcePostId: deliveredPromiseSource.id,
+    canonicalHash: deliveredCanonicalHash,
+    status: "DELIVERED",
+    normalizedClaim: payloads.deliveredClaim.normalizedClaim,
+    sourceQuote: payloads.deliveredClaim.sourceQuote,
+    deliverable: payloads.deliveredClaim.deliverable,
+    deadlineText: payloads.deliveredClaim.deadlineText,
+    deadlineAt: payloads.deliveredClaim.deadlineAt,
+    deadlineTimezone: payloads.deliveredClaim.deadlineTimezone,
+    deadlineConfidence: payloads.deliveredClaim.deadlineConfidence,
+    extractionConfidence: payloads.deliveredClaim.extractionConfidence,
+    deliveryCriteriaJson: [
+      "The public audit report is published or linked.",
+      "The report is attributable to Example Protocol."
+    ],
+    nonDeliveryCriteriaJson: [
+      "A teaser or summary thread without the audit report itself.",
+      "A delay or scope change without the report being published."
+    ],
+    ambiguityNotesJson: [],
+    relatedClaimIdsJson: [],
+    heyAnonContextJson: {
+      mocked: true,
+      source: "fixtureWorker"
     }
   });
 

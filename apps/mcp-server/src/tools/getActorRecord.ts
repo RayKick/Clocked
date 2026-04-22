@@ -1,6 +1,10 @@
-import { z } from "zod";
-import { countClaimsByStatus, factualSummaryForCounts } from "@clocked/core";
+import {
+  countClaimsByStatus,
+  factualSummaryForCounts,
+  getAppBaseUrl
+} from "@clocked/core";
 import { prisma } from "@clocked/db";
+import { z } from "zod";
 
 export const getActorRecordInputSchema = z.object({
   platform: z.enum(["X", "TELEGRAM", "DISCORD", "GITHUB", "MANUAL"]),
@@ -37,7 +41,7 @@ export async function getActorRecordTool(input: unknown) {
       status: claim.status,
       normalizedClaim: claim.normalizedClaim
     })),
-    publicUrl: `${process.env.APP_BASE_URL ?? "http://localhost:3000"}/a/${actor.platform}/${actor.handle}`,
+    publicUrl: `${getAppBaseUrl(process.env)}/a/${actor.platform}/${actor.handle}`,
     factualSummary: factualSummaryForCounts(actor.displayName ?? actor.handle, counts)
   };
 }

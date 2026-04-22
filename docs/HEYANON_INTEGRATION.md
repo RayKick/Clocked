@@ -41,3 +41,10 @@ These results stay review-oriented in MVP. They do not automatically publish new
 - HUD registration or pull semantics
 
 No production endpoint paths are hardcoded as trusted facts. Everything stays behind typed clients so transport can be swapped once real documentation is available.
+
+## Current Reviewer Posture
+
+- dry-run and local demo first
+- MCP proves agent composability today
+- live HeyAnon and Gemma calls remain mocked until contracts are confirmed
+- HUD export remains public-safe and compact

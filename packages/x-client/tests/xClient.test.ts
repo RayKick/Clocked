@@ -1,12 +1,18 @@
 import { describe, expect, it } from "vitest";
 
 import { MockXClient } from "../src/mockXClient.js";
-import { canPostApprovedBotReply, canWriteToX, postApprovedBotReply } from "../src/xClient.js";
+import {
+  canPostApprovedBotReply,
+  canReadFromX,
+  canWriteToX,
+  postApprovedBotReply
+} from "../src/xClient.js";
 
 describe("xClient safety guards", () => {
   it("blocks all writes when X_POSTING_ENABLED=false", () => {
     const result = canWriteToX({
       X_API_BASE_URL: "https://api.x.com",
+      X_READ_ENABLED: false,
       X_POSTING_ENABLED: false,
       SAFE_DRY_RUN: false,
       CLOCKED_BOT_HANDLE: "ClockedBot"
@@ -14,6 +20,19 @@ describe("xClient safety guards", () => {
 
     expect(result.ok).toBe(false);
     expect(result.reason).toContain("X_POSTING_ENABLED=false");
+  });
+
+  it("blocks live reads when X_READ_ENABLED=false", () => {
+    const result = canReadFromX({
+      X_API_BASE_URL: "https://api.x.com",
+      X_READ_ENABLED: false,
+      X_POSTING_ENABLED: false,
+      SAFE_DRY_RUN: true,
+      CLOCKED_BOT_HANDLE: "ClockedBot"
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.reason).toContain("X_READ_ENABLED=false");
   });
 
   it("blocks posting approved replies in SAFE_DRY_RUN mode", () => {
@@ -26,6 +45,7 @@ describe("xClient safety guards", () => {
       },
       {
         X_API_BASE_URL: "https://api.x.com",
+        X_READ_ENABLED: false,
         X_POSTING_ENABLED: true,
         SAFE_DRY_RUN: true,
         CLOCKED_BOT_HANDLE: "ClockedBot"
@@ -48,6 +68,7 @@ describe("xClient safety guards", () => {
       },
       environment: {
         X_API_BASE_URL: "https://api.x.com",
+        X_READ_ENABLED: false,
         X_POSTING_ENABLED: true,
         SAFE_DRY_RUN: false,
         CLOCKED_BOT_HANDLE: "ClockedBot",
@@ -74,6 +95,7 @@ describe("xClient safety guards", () => {
       },
       environment: {
         X_API_BASE_URL: "https://api.x.com",
+        X_READ_ENABLED: false,
         X_POSTING_ENABLED: true,
         SAFE_DRY_RUN: false,
         CLOCKED_BOT_HANDLE: "ClockedBot",

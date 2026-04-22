@@ -1,6 +1,10 @@
-import { z } from "zod";
-import { countClaimsByStatus, factualSummaryForCounts } from "@clocked/core";
+import {
+  countClaimsByStatus,
+  factualSummaryForCounts,
+  getAppBaseUrl
+} from "@clocked/core";
 import { prisma } from "@clocked/db";
+import { z } from "zod";
 
 export const getProjectRecordInputSchema = z.object({
   projectSlug: z.string().min(1)
@@ -59,7 +63,7 @@ export async function getProjectRecordTool(input: unknown) {
         reason: event.reason,
         createdAt: event.createdAt.toISOString()
       })),
-    publicUrl: `${process.env.APP_BASE_URL ?? "http://localhost:3000"}/p/${project.slug}`,
+    publicUrl: `${getAppBaseUrl(process.env)}/p/${project.slug}`,
     factualSummary: factualSummaryForCounts(project.name, counts)
   };
 }

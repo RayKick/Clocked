@@ -1,5 +1,6 @@
-import { z } from "zod";
 import { prisma } from "@clocked/db";
+import { getAppBaseUrl } from "@clocked/core";
+import { z } from "zod";
 
 export const getDueClaimsInputSchema = z.object({
   timeframe: z.enum(["today", "this_week", "next_7_days", "overdue"]),
@@ -34,7 +35,7 @@ export async function getDueClaimsTool(input: unknown) {
       status: claim.status,
       normalizedClaim: claim.normalizedClaim,
       deadlineAt: claim.deadlineAt?.toISOString() ?? null,
-      publicUrl: `${process.env.APP_BASE_URL ?? "http://localhost:3000"}/c/${claim.publicSlug}`
+      publicUrl: `${getAppBaseUrl(process.env)}/c/${claim.publicSlug}`
     }))
   };
 }

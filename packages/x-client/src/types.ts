@@ -15,6 +15,7 @@ export const XEnvironmentSchema = z.object({
   X_API_SECRET: z.string().optional(),
   X_ACCESS_TOKEN: z.string().optional(),
   X_ACCESS_TOKEN_SECRET: z.string().optional(),
+  X_READ_ENABLED: XPostingEnabledSchema.default(false),
   X_POSTING_ENABLED: XPostingEnabledSchema.default(false),
   SAFE_DRY_RUN: XPostingEnabledSchema.default(true),
   CLOCKED_BOT_HANDLE: z.string().default("ClockedBot")

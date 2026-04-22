@@ -1,5 +1,6 @@
-import { z } from "zod";
 import { prisma } from "@clocked/db";
+import { getAppBaseUrl } from "@clocked/core";
+import { z } from "zod";
 
 export const getClaimInputSchema = z.object({
   slug: z.string().min(1)
@@ -47,6 +48,6 @@ export async function getClaimTool(input: unknown) {
       reason: event.reason,
       createdAt: event.createdAt.toISOString()
     })),
-    publicUrl: `${process.env.APP_BASE_URL ?? "http://localhost:3000"}/c/${claim.publicSlug}`
+    publicUrl: `${getAppBaseUrl(process.env)}/c/${claim.publicSlug}`
   };
 }

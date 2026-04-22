@@ -27,6 +27,25 @@ function toSentenceCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
+function trimSentence(value: string): string {
+  return normalizeWhitespace(value).replace(/[.!?]+$/, "").trim();
+}
+
+function getProjectName(input: ClaimExtractionInput): string {
+  return input.projectName?.trim() || "This project";
+}
+
+function preserveDeadlineText(
+  sourceText: string,
+  fallback?: string,
+): string | undefined {
+  const match = sourceText.match(
+    /\b(by\s+(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)|tomorrow|next week|this week|this month|q[1-4](?:\s+\d{4})?)\b/i,
+  );
+
+  return match?.[0] ?? fallback;
+}
+
 function getFirstSentence(text: string): string {
   const trimmed = normalizeWhitespace(text);
   const match = trimmed.match(/(.+?[.!?])(?:\s|$)/);
@@ -86,6 +105,111 @@ function inferDeliverable(text: string): string | undefined {
       .replace(/^(we|i)\s+(will|are going to|plan to|expect to)\s+/i, "")
       .replace(/\.$/, "");
     return simplified || undefined;
+  }
+
+  return undefined;
+}
+
+type ExtractionTemplate = {
+  verdict: ClaimExtractionResult["verdict"];
+  normalizedClaim?: string;
+  deliverable?: string;
+  deadlineText?: string;
+  deliveryCriteria?: string[];
+  nonDeliveryCriteria?: string[];
+  ambiguityNotes?: string[];
+  notClockableReason?: string;
+  confidence?: number;
+};
+
+function matchTemplate(input: ClaimExtractionInput): ExtractionTemplate | undefined {
+  const normalized = normalizeWhitespace(input.text);
+  const lowered = normalized.toLowerCase();
+  const projectName = getProjectName(input);
+  const preservedDeadline = preserveDeadlineText(input.text);
+
+  const vMatch = normalized.match(/\b(v\d+)\b/i);
+  if (vMatch && /\bships?\b/i.test(normalized) && /\bnext week\b/i.test(normalized)) {
+    const version = (vMatch[1] ?? "V2").toUpperCase();
+    return {
+      verdict: "CLOCKABLE",
+      normalizedClaim: `${projectName} will ship ${version} next week.`,
+      deliverable: version,
+      deadlineText: "next week",
+      deliveryCriteria: [
+        `A public ${version} release is announced or accessible.`,
+        `The release is attributable to ${projectName}.`,
+      ],
+      nonDeliveryCriteria: [
+        `A teaser, waitlist, or vague update without a public ${version} release.`,
+        "A delayed or reframed announcement without delivery.",
+      ],
+      confidence: 0.9,
+    };
+  }
+
+  if (/\brewards dashboard\b/i.test(normalized) && /\bships?\b/i.test(normalized)) {
+    const deadlineText = preservedDeadline ?? "by Friday";
+    return {
+      verdict: "CLOCKABLE",
+      normalizedClaim: `${projectName} will ship the rewards dashboard ${deadlineText}.`,
+      deliverable: "rewards dashboard",
+      deadlineText,
+      deliveryCriteria: [
+        "A public rewards dashboard is announced or accessible.",
+        `The release is attributable to ${projectName}.`,
+      ],
+      nonDeliveryCriteria: [
+        "A teaser, waitlist, or vague update without a public rewards dashboard.",
+        "A delayed or reframed announcement without delivery.",
+      ],
+      confidence: 0.9,
+    };
+  }
+
+  if (/\baudit report\b/i.test(normalized) && /\b(published|publishes|publish|ships?)\b/i.test(normalized)) {
+    const deadlineText = preservedDeadline ?? "by Friday";
+    return {
+      verdict: "CLOCKABLE",
+      normalizedClaim: `${projectName} will publish its audit report ${deadlineText}.`,
+      deliverable: "audit report",
+      deadlineText,
+      deliveryCriteria: [
+        "The audit report is publicly published or linked.",
+        `The report is attributable to ${projectName}.`,
+      ],
+      nonDeliveryCriteria: [
+        "A teaser, summary, or vague update appears without the audit report itself.",
+        "A delayed or reframed announcement appears without the report being published.",
+      ],
+      confidence: 0.9,
+    };
+  }
+
+  if (/\bbig things coming soon\b/i.test(lowered)) {
+    return {
+      verdict: "NOT_CLOCKABLE",
+      notClockableReason: "Missing concrete deliverable and bounded deadline.",
+      confidence: 0.95,
+    };
+  }
+
+  if (/\bbeta\b/i.test(lowered) && /\bsoon\b/i.test(lowered) && /\bprobably next week\b/i.test(lowered)) {
+    return {
+      verdict: "NEEDS_REVIEW",
+      normalizedClaim: `${projectName} may ship beta next week.`,
+      deliverable: "beta",
+      deadlineText: "probably next week",
+      deliveryCriteria: [
+        "A public beta release is announced or accessible.",
+        `The beta is attributable to ${projectName}.`,
+      ],
+      nonDeliveryCriteria: [
+        "A vague progress update without a public beta release.",
+      ],
+      ambiguityNotes: ["Deliverable or deadline is ambiguous."],
+      confidence: 0.68,
+    };
   }
 
   return undefined;
@@ -154,13 +278,22 @@ function deriveNonDeliveryCriteria(deliverable?: string): string[] {
 
 function buildNormalizedClaim(input: ClaimExtractionInput, deliverable?: string): string | undefined {
   const deadline = parseDeadlineFromText(input).deadlineText;
+  const projectName = getProjectName(input);
 
   if (deliverable && deadline) {
-    return `${toSentenceCase(deliverable)} is promised by ${deadline}.`;
+    if (/\bpublication\b/i.test(deliverable)) {
+      return `${projectName} will publish ${trimSentence(deliverable.replace(/\s+publication$/i, ""))} ${deadline}.`;
+    }
+
+    if (/\blaunch\b/i.test(deliverable)) {
+      return `${projectName} will launch ${trimSentence(deliverable.replace(/\s+launch$/i, ""))} ${deadline}.`;
+    }
+
+    return `${projectName} will deliver ${trimSentence(deliverable)} ${deadline}.`;
   }
 
   if (deliverable) {
-    return `${toSentenceCase(deliverable)} is being promised publicly.`;
+    return `${projectName} is publicly referencing ${trimSentence(deliverable)}.`;
   }
 
   return undefined;
@@ -215,14 +348,23 @@ export class MockAiClient {
     const sourceQuote = getFirstSentence(parsedInput.text);
     const ambiguityNotes = detectAmbiguityNotes(parsedInput.text);
     const deadline = parseDeadlineFromText(parsedInput);
-    const deliverable = inferDeliverable(parsedInput.text);
+    const template = matchTemplate(parsedInput);
+    const deliverable = template?.deliverable ?? inferDeliverable(parsedInput.text);
     const concreteDeliverable = hasConcreteDeliverable(parsedInput.text);
+    const deadlineText = template?.deadlineText ?? preserveDeadlineText(parsedInput.text, deadline.deadlineText);
+    const mergedAmbiguityNotes = [
+      ...new Set([...(template?.ambiguityNotes ?? []), ...ambiguityNotes]),
+    ];
     const verdict = (() => {
+      if (template) {
+        return template.verdict;
+      }
+
       if (!concreteDeliverable && isVagueOnly(parsedInput.text)) {
         return "NOT_CLOCKABLE" as const;
       }
 
-      if (ambiguityNotes.length > 0) {
+      if (mergedAmbiguityNotes.length > 0) {
         return "NEEDS_REVIEW" as const;
       }
 
@@ -240,28 +382,34 @@ export class MockAiClient {
     const result: ClaimExtractionResult = {
       verdict,
       confidence:
-        verdict === "CLOCKABLE" ? 0.86 : verdict === "NEEDS_REVIEW" ? 0.68 : 0.93,
+        template?.confidence ??
+        (verdict === "CLOCKABLE" ? 0.86 : verdict === "NEEDS_REVIEW" ? 0.68 : 0.93),
       notClockableReason:
-        verdict === "NOT_CLOCKABLE"
+        template?.notClockableReason ??
+        (verdict === "NOT_CLOCKABLE"
           ? concreteDeliverable
             ? "The statement does not include a clear, bounded deadline."
-            : "The statement is hype or commentary without a concrete deliverable and deadline."
-          : undefined,
+            : "Missing concrete deliverable and bounded deadline."
+          : undefined),
       normalizedClaim:
         verdict === "NOT_CLOCKABLE"
           ? undefined
-          : buildNormalizedClaim(parsedInput, deliverable),
+          : template?.normalizedClaim ?? buildNormalizedClaim(parsedInput, deliverable),
       sourceQuote,
       deliverable,
-      deadlineText: deadline.deadlineText,
+      deadlineText,
       deadlineAt: deadline.deadlineAt,
       deadlineTimezone: deadline.deadlineTimezone,
       deadlineConfidence: deadline.deadlineConfidence,
       deliveryCriteria:
-        verdict === "NOT_CLOCKABLE" ? [] : deriveDeliveryCriteria(deliverable),
+        verdict === "NOT_CLOCKABLE"
+          ? []
+          : template?.deliveryCriteria ?? deriveDeliveryCriteria(deliverable),
       nonDeliveryCriteria:
-        verdict === "NOT_CLOCKABLE" ? [] : deriveNonDeliveryCriteria(deliverable),
-      ambiguityNotes,
+        verdict === "NOT_CLOCKABLE"
+          ? []
+          : template?.nonDeliveryCriteria ?? deriveNonDeliveryCriteria(deliverable),
+      ambiguityNotes: mergedAmbiguityNotes,
       suggestedProjectName: parsedInput.projectName,
       suggestedActorType: inferActorType(parsedInput),
       publicCardHeadline:
@@ -269,8 +417,8 @@ export class MockAiClient {
           ? "Not Clockable"
           : toSentenceCase(deliverable ?? "Claim under review"),
       publicCardSubline:
-        verdict === "CLOCKABLE"
-          ? `Deadline: ${deadline.deadlineText}`
+        verdict === "CLOCKABLE" && deadlineText
+          ? `Deadline: ${deadlineText}`
           : verdict === "NEEDS_REVIEW"
             ? "Deliverable or deadline needs review."
             : "Needs a concrete deliverable and deadline.",

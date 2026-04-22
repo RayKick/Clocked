@@ -12,9 +12,13 @@ function numberValue(payload: Record<string, unknown>, key: string) {
   return typeof payload[key] === "number" ? payload[key] : null;
 }
 
-function proposedAction(kind: string) {
+function proposedAction(kind: string, payload: Record<string, unknown>) {
+  const verdict = stringValue(payload, "verdict");
   switch (kind) {
     case "CLAIM_CREATE":
+      if (verdict === "NOT_CLOCKABLE") {
+        return "Informational only. This item should stay non-public and can be rejected to clear the queue.";
+      }
       return "Create a local public claim and a draft bot reply. Approval does not post externally.";
     case "STATUS_CHANGE":
       return "Apply the proposed status only after human review. Approval does not change any external platform state.";
@@ -45,12 +49,14 @@ export function AdminReviewCard(props: {
   const normalizedClaim = stringValue(payload, "normalizedClaim");
   const deadlineText = stringValue(payload, "deadlineText");
   const proposedStatus = stringValue(payload, "proposedStatus");
+  const notClockableReason = stringValue(payload, "notClockableReason");
   const summaryLines = [
     verdict ? `Verdict: ${verdict}` : null,
     sourceQuote ? `Source quote: ${sourceQuote}` : null,
     normalizedClaim ? `Normalized claim: ${normalizedClaim}` : null,
     deadlineText ? `Deadline: ${deadlineText}` : null,
     proposedStatus ? `Proposed status: ${proposedStatus}` : null,
+    notClockableReason ? `Reason: ${notClockableReason}` : null,
     numberValue(payload, "deadlineConfidence") != null
       ? `Deadline confidence: ${numberValue(payload, "deadlineConfidence")}`
       : null
@@ -77,16 +83,18 @@ export function AdminReviewCard(props: {
       ) : null}
       <div className="panel">
         <strong>Proposed action</strong>
-        <p style={{ marginBottom: 0 }}>{proposedAction(props.reviewItem.kind)}</p>
+        <p style={{ marginBottom: 0 }}>{proposedAction(props.reviewItem.kind, payload)}</p>
       </div>
       <pre>{JSON.stringify(props.reviewItem.payloadJson, null, 2)}</pre>
       <p>Approval does not post externally.</p>
       <div className="admin-actions">
-        <form action={`/api/admin/review/${props.reviewItem.id}/approve`} method="post">
-          <input type="hidden" name="adminPassword" value={props.adminPassword ?? ""} />
-          <input type="hidden" name="redirectTo" value="/admin/review" />
-          <button type="submit">Approve</button>
-        </form>
+        {verdict === "NOT_CLOCKABLE" ? null : (
+          <form action={`/api/admin/review/${props.reviewItem.id}/approve`} method="post">
+            <input type="hidden" name="adminPassword" value={props.adminPassword ?? ""} />
+            <input type="hidden" name="redirectTo" value="/admin/review" />
+            <button type="submit">Approve</button>
+          </form>
+        )}
         <form action={`/api/admin/review/${props.reviewItem.id}/reject`} method="post">
           <input type="hidden" name="adminPassword" value={props.adminPassword ?? ""} />
           <input type="hidden" name="reason" value="Rejected from admin queue." />

@@ -84,7 +84,7 @@ export default async function HomePage({
             <p style={{ margin: "0.6rem 0", opacity: 0.84 }}>
               Concrete claim, bounded deadline, and public criteria preserved.
             </p>
-            <Link href="/c/example-protocol-example-protocol-will-ship-v2-next-week">
+            <Link href="/c/example-protocol-will-ship-v2-next-week">
               View receipt
             </Link>
           </article>

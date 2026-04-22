@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { getWebBaseUrl } from "./_base-url.mjs";
 
 function loadEnvFile() {
   const envPath = resolve(process.cwd(), ".env");
@@ -37,11 +38,11 @@ async function assertOk(url) {
 
 loadEnvFile();
 
-const baseUrl = process.env.APP_BASE_URL ?? "http://localhost:3002";
+const baseUrl = getWebBaseUrl(process.env);
 const urls = [
   `${baseUrl}/`,
   `${baseUrl}/admin/review`,
-  `${baseUrl}/c/example-protocol-example-protocol-will-ship-v2-next-week`,
+  `${baseUrl}/c/example-protocol-will-ship-v2-next-week`,
   `${baseUrl}/p/example-protocol`,
   `${baseUrl}/a/X/examplefounder`,
   `${baseUrl}/due`,
@@ -49,6 +50,7 @@ const urls = [
 ];
 
 try {
+  console.log(`Using web base URL: ${baseUrl}`);
   for (const url of urls) {
     await assertOk(url);
   }

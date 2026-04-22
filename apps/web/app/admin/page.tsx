@@ -24,6 +24,9 @@ export default async function AdminPage() {
         <Link href="/admin/review" className="button">
           Open review queue
         </Link>
+        <Link href="/admin/ingest" className="button secondary">
+          Read-only X ingest
+        </Link>
       </div>
     </PageShell>
   );

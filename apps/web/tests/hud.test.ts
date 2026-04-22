@@ -13,7 +13,7 @@ vi.mock("../lib/data", () => ({
     slippedCount: 0,
     reframedCount: 0,
     latestClaim: {
-      slug: "example-protocol-example-protocol-will-ship-v2-next-week",
+      slug: "example-protocol-will-ship-v2-next-week",
       status: "OPEN",
       claim: "Example Protocol will ship V2 next week."
     },

@@ -2,7 +2,8 @@ export function createMcpManifest() {
   return {
     name: "CLOCKED MCP",
     version: "0.1.0",
-    description: "Public receipts MCP for CLOCKED claims, records, and safe drafting.",
+    description:
+      "Public receipts MCP for CLOCKED claims, project records, actor records, due feeds, and safe drafting.",
     tools: [
       "clocked.search_claims",
       "clocked.get_claim",
@@ -27,7 +28,11 @@ export function createMcpManifest() {
       "audit_project_delivery_record",
       "what_did_they_promise",
       "find_reframes"
-    ]
+    ],
+    dryRunDefaults: {
+      safeDryRun: true,
+      xPostingEnabled: false,
+      heyanonLiveCallsEnabled: false
+    }
   };
 }
-

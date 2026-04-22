@@ -52,14 +52,16 @@ Fixtures are deterministic and should remain idempotent.
 
 ## Smoke Checks
 
-If the web server is running:
-
 ```bash
+corepack pnpm demo:seed
+corepack pnpm demo:verify
 corepack pnpm demo:smoke:web
-```
-
-If the MCP server is running:
-
-```bash
 corepack pnpm demo:smoke:mcp
+corepack pnpm demo:summary
 ```
+
+## Port Notes
+
+- Set `APP_BASE_URL` to the active local web port before running HUD or MCP demos.
+- `WEB_BASE_URL` can override the smoke target if your web server is on a temporary port.
+- `MCP_BASE_URL` can override MCP smoke if you are not using `CLOCKED_MCP_BASE_URL`.

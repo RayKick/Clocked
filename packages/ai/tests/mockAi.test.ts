@@ -18,6 +18,65 @@ describe("mock ai extraction", () => {
     expect(result.deadlineText).toBeTruthy();
   });
 
+  it("normalizes the rewards dashboard ingest demo cleanly", async () => {
+    const result = await extractClaim(
+      {
+        text: "Rewards dashboard ships by Friday.",
+        sourcePostedAt: "2026-04-16T09:00:00.000Z",
+        sourceAuthorHandle: "examplefounder",
+        projectName: "Example Protocol"
+      },
+      { mode: "mock" }
+    );
+
+    expect(result).toMatchObject({
+      verdict: "CLOCKABLE",
+      normalizedClaim: "Example Protocol will ship the rewards dashboard by Friday.",
+      sourceQuote: "Rewards dashboard ships by Friday.",
+      deliverable: "rewards dashboard",
+      deadlineText: "by Friday"
+    });
+    expect(result.normalizedClaim?.toLowerCase()).not.toContain("by by");
+    expect(result.deliveryCriteria).toEqual([
+      "A public rewards dashboard is announced or accessible.",
+      "The release is attributable to Example Protocol."
+    ]);
+    expect(result.nonDeliveryCriteria).toEqual([
+      "A teaser, waitlist, or vague update without a public rewards dashboard.",
+      "A delayed or reframed announcement without delivery."
+    ]);
+  });
+
+  it("marks vague hype as not clockable with a factual reason", async () => {
+    const result = await extractClaim(
+      {
+        text: "Big things coming soon.",
+        sourcePostedAt: "2026-04-22T10:00:00.000Z",
+        sourceAuthorHandle: "examplefounder",
+        projectName: "Example Protocol"
+      },
+      { mode: "mock" }
+    );
+
+    expect(result.verdict).toBe("NOT_CLOCKABLE");
+    expect(result.notClockableReason).toBe("Missing concrete deliverable and bounded deadline.");
+  });
+
+  it("marks tentative beta timing as needs review", async () => {
+    const result = await extractClaim(
+      {
+        text: "Beta soon, probably next week.",
+        sourcePostedAt: "2026-04-22T10:00:00.000Z",
+        sourceAuthorHandle: "examplefounder",
+        projectName: "Example Protocol"
+      },
+      { mode: "mock" }
+    );
+
+    expect(result.verdict).toBe("NEEDS_REVIEW");
+    expect(result.ambiguityNotes).toContain("Deliverable or deadline is ambiguous.");
+  });
+
   it("evaluates status conservatively", async () => {
     const result = await evaluateClaimStatus(
       {

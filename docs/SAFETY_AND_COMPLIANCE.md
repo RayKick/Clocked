@@ -108,12 +108,16 @@ External writes must be off by default.
 Required constraints:
 
 - `SAFE_DRY_RUN=true` by default
+- `X_READ_ENABLED=false` by default
 - no X posting unless `X_POSTING_ENABLED=true`
+- no live X reads unless `X_READ_ENABLED=true`
 - no posting unless an admin-approved `BotReply` exists
 - no live HeyAnon or Gemma calls unless `HEYANON_ENABLE_LIVE_CALLS=true`
 - no client-side secret exposure under any circumstance
 
 This ensures local development and test runs remain safe.
+
+X reads and X writes are separate controls. `X_POSTING_ENABLED` only governs writes. `X_READ_ENABLED` governs live read attempts. Human review remains required either way.
 
 ## Secrets Handling
 
