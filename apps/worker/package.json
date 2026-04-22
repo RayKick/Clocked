@@ -1,0 +1,26 @@
+{
+  "name": "@clocked/worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx src/index.ts dev",
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "worker:dev": "tsx src/index.ts dev",
+    "worker:fixtures": "tsx src/index.ts fixtures",
+    "worker:x-stream": "tsx src/index.ts x-stream",
+    "worker:deadlines": "tsx src/index.ts deadlines",
+    "worker:heyanon-evidence": "tsx src/index.ts heyanon-evidence",
+    "worker:digest": "tsx src/index.ts digest"
+  },
+  "dependencies": {
+    "@clocked/ai": "workspace:*",
+    "@clocked/core": "workspace:*",
+    "@clocked/db": "workspace:*",
+    "@clocked/heyanon": "workspace:*",
+    "@clocked/x-client": "workspace:*",
+    "dotenv": "^16.5.0"
+  }
+}

@@ -1,0 +1,393 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Platform {
+  X
+  TELEGRAM
+  DISCORD
+  GITHUB
+  GITBOOK
+  HEYANON
+  MANUAL
+}
+
+enum ActorType {
+  FOUNDER
+  OFFICIAL_PROJECT
+  TEAM_MEMBER
+  COMMUNITY
+  UNKNOWN
+}
+
+enum TriggerStatus {
+  RECEIVED
+  IGNORED
+  REVIEW_CREATED
+  FAILED
+}
+
+enum ClaimStatus {
+  OPEN
+  DELIVERED
+  SLIPPED
+  REFRAMED
+  SUPERSEDED
+  AMBIGUOUS
+}
+
+enum EvidenceType {
+  SOURCE
+  FOLLOW_UP
+  DELIVERY_PROOF
+  REFRAME
+  SUPERSEDING_CLAIM
+  MANUAL_NOTE
+  HEYANON_GEMMA_RESULT
+  GITHUB_ACTIVITY
+  GITBOOK_CHANGE
+  COMMUNITY_SIGNAL
+}
+
+enum StatusActorType {
+  SYSTEM
+  AI
+  ADMIN
+}
+
+enum ReviewKind {
+  CLAIM_CREATE
+  STATUS_CHANGE
+  BOT_REPLY
+  EVIDENCE_REVIEW
+  HEYANON_EVIDENCE
+  CLAIM_STITCH
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum BotReplyStatus {
+  DRAFT
+  APPROVED
+  POSTED
+  FAILED
+  SKIPPED
+}
+
+enum JobKind {
+  X_STREAM_CONNECT
+  INGEST_TRIGGER
+  EXTRACT_CLAIM
+  DEADLINE_CHECK
+  STATUS_EVALUATION
+  POST_APPROVED_REPLY
+  HEYANON_EVIDENCE_QUERY
+  GEMMA_EVIDENCE_QUERY
+  CLAIM_STITCHING
+  DIGEST_BUILD
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum HeyAnonQueryType {
+  PROJECT_CONTEXT
+  SOCIAL_SEARCH
+  CHAT_SEARCH
+  GITHUB_ACTIVITY
+  GITBOOK_CHANGE
+  SENTIMENT_SUMMARY
+  DELIVERY_EVIDENCE
+  CLAIM_STITCHING
+}
+
+enum HeyAnonQueryStatus {
+  DRAFT
+  MOCKED
+  SENT
+  COMPLETED
+  FAILED
+}
+
+enum McpCallerType {
+  LOCAL
+  HEYANON
+  EXTERNAL
+  ADMIN_TEST
+}
+
+enum McpInvocationStatus {
+  SUCCESS
+  FAILED
+}
+
+model Project {
+  id                String              @id @default(cuid())
+  slug              String              @unique
+  name              String
+  description       String?             @db.Text
+  website           String?
+  officialXHandle   String?
+  officialTelegram  String?
+  officialDiscord   String?
+  gitHubOrg         String?
+  gitBookUrl        String?
+  heyAnonProjectKey String?
+  launchpadAgentId  String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  actors            Actor[]
+  claims            Claim[]
+  heyAnonQueries    HeyAnonQuery[]
+  hudSnapshots      HudExportSnapshot[]
+
+  @@index([name])
+  @@index([heyAnonProjectKey])
+}
+
+model Actor {
+  id             String       @id @default(cuid())
+  platform       Platform
+  handle         String
+  displayName    String?
+  platformUserId String?
+  actorType      ActorType    @default(UNKNOWN)
+  projectId      String?
+  verifiedSource Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  project        Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  sourcePosts    SourcePost[] @relation("SourcePostAuthor")
+  claims         Claim[]
+
+  @@unique([platform, handle])
+  @@index([projectId, actorType])
+  @@index([platformUserId])
+}
+
+model SourcePost {
+  id                   String     @id @default(cuid())
+  platform             Platform
+  platformPostId       String?
+  url                  String?
+  authorId             String?
+  text                 String     @db.Text
+  postedAt             DateTime?
+  capturedAt           DateTime   @default(now())
+  rawJson              Json?
+  parentPlatformPostId String?
+  quotedPlatformPostId String?
+  contentHash          String
+  sourceConfidence     Float      @default(0.5)
+  createdAt            DateTime   @default(now())
+  author               Actor?     @relation("SourcePostAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  triggerSourceLinks   Trigger[]  @relation("TriggerSourceSourcePost")
+  triggerTargetLinks   Trigger[]  @relation("TriggerTargetSourcePost")
+  claims               Claim[]
+  evidences            Evidence[]
+
+  @@unique([platform, platformPostId])
+  @@index([contentHash])
+  @@index([authorId, postedAt])
+  @@index([postedAt])
+}
+
+model Trigger {
+  id                  String        @id @default(cuid())
+  platform            Platform
+  platformTriggerPostId String?
+  triggerSourcePostId String?
+  targetSourcePostId  String?
+  requestedByHandle   String?
+  phrase              String
+  status              TriggerStatus @default(RECEIVED)
+  error               String?
+  createdAt           DateTime      @default(now())
+  triggerSourcePost   SourcePost?   @relation("TriggerSourceSourcePost", fields: [triggerSourcePostId], references: [id], onDelete: SetNull)
+  targetSourcePost    SourcePost?   @relation("TriggerTargetSourcePost", fields: [targetSourcePostId], references: [id], onDelete: SetNull)
+  botReplies          BotReply[]
+
+  @@unique([platform, platformTriggerPostId])
+  @@index([status, createdAt])
+  @@index([platform, createdAt])
+}
+
+model Claim {
+  id                    String          @id @default(cuid())
+  publicSlug            String          @unique
+  projectId             String?
+  actorId               String?
+  sourcePostId          String
+  canonicalHash         String
+  status                ClaimStatus     @default(OPEN)
+  normalizedClaim       String          @db.Text
+  sourceQuote           String          @db.Text
+  deliverable           String          @db.Text
+  deadlineText          String
+  deadlineAt            DateTime?
+  deadlineTimezone      String?
+  deadlineConfidence    Float           @default(0.5)
+  extractionConfidence  Float           @default(0.5)
+  deliveryCriteriaJson  Json
+  nonDeliveryCriteriaJson Json
+  ambiguityNotesJson    Json
+  relatedClaimIdsJson   Json
+  heyAnonContextJson    Json?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  project               Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  actor                 Actor?          @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  sourcePost            SourcePost      @relation(fields: [sourcePostId], references: [id], onDelete: Restrict)
+  evidences             Evidence[]
+  statusEvents          StatusEvent[]
+  botReplies            BotReply[]
+  heyAnonQueries        HeyAnonQuery[]
+
+  @@unique([sourcePostId, canonicalHash])
+  @@index([canonicalHash])
+  @@index([status, deadlineAt])
+  @@index([projectId, status, deadlineAt])
+  @@index([actorId, status, deadlineAt])
+}
+
+model Evidence {
+  id           String       @id @default(cuid())
+  claimId      String
+  sourcePostId String?
+  evidenceType EvidenceType
+  url          String?
+  summary      String       @db.Text
+  occurredAt   DateTime?
+  confidence   Float        @default(0.5)
+  rawJson      Json?
+  createdAt    DateTime     @default(now())
+  claim        Claim        @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  sourcePost   SourcePost?  @relation(fields: [sourcePostId], references: [id], onDelete: SetNull)
+
+  @@index([claimId, evidenceType, createdAt])
+  @@index([occurredAt])
+}
+
+model StatusEvent {
+  id           String          @id @default(cuid())
+  claimId      String
+  fromStatus   ClaimStatus?
+  toStatus     ClaimStatus
+  reason       String          @db.Text
+  evidenceJson Json?
+  actorType    StatusActorType
+  createdAt    DateTime        @default(now())
+  claim        Claim           @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId, createdAt])
+  @@index([toStatus, createdAt])
+}
+
+model ReviewItem {
+  id         String       @id @default(cuid())
+  kind       ReviewKind
+  status     ReviewStatus @default(PENDING)
+  payloadJson Json
+  reason     String?
+  createdAt  DateTime     @default(now())
+  reviewedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([kind, status, createdAt])
+}
+
+model BotReply {
+  id                   String         @id @default(cuid())
+  claimId              String?
+  triggerId            String?
+  platform             Platform
+  replyToPlatformPostId String?
+  proposedText         String         @db.Text
+  status               BotReplyStatus @default(DRAFT)
+  postedPlatformPostId String?
+  error                String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  claim                Claim?         @relation(fields: [claimId], references: [id], onDelete: SetNull)
+  trigger              Trigger?       @relation(fields: [triggerId], references: [id], onDelete: SetNull)
+
+  @@index([status, platform, createdAt])
+  @@index([claimId, status])
+  @@index([triggerId, status])
+}
+
+model Job {
+  id         String    @id @default(cuid())
+  kind       JobKind
+  status     JobStatus @default(QUEUED)
+  payloadJson Json
+  attempts   Int       @default(0)
+  lockedAt   DateTime?
+  lastError  String?
+  runAfter   DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([status, runAfter, kind])
+  @@index([kind, status, createdAt])
+  @@index([lockedAt])
+}
+
+model HeyAnonQuery {
+  id           String             @id @default(cuid())
+  queryType    HeyAnonQueryType
+  projectId    String?
+  claimId      String?
+  prompt       String             @db.Text
+  sourcesJson  Json
+  timeframeJson Json
+  status       HeyAnonQueryStatus @default(DRAFT)
+  responseJson Json?
+  error        String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  project      Project?           @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  claim        Claim?             @relation(fields: [claimId], references: [id], onDelete: SetNull)
+
+  @@index([status, queryType, createdAt])
+  @@index([projectId, queryType])
+  @@index([claimId, queryType])
+}
+
+model McpInvocation {
+  id         String              @id @default(cuid())
+  toolName   String
+  inputJson  Json
+  outputJson Json?
+  callerType McpCallerType
+  status     McpInvocationStatus
+  error      String?
+  createdAt  DateTime            @default(now())
+
+  @@index([toolName, createdAt])
+  @@index([status, createdAt])
+}
+
+model HudExportSnapshot {
+  id         String   @id @default(cuid())
+  projectId  String
+  payloadJson Json
+  createdAt  DateTime @default(now())
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+}

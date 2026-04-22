@@ -1,0 +1,11 @@
+{"normalizedClaim":"Public beta ships by Friday.","evidenceText":["The public beta is live and available now."],"expectedStatus":"DELIVERED"}
+{"normalizedClaim":"Mainnet launches tomorrow.","evidenceText":["Mainnet is live."],"expectedStatus":"DELIVERED"}
+{"normalizedClaim":"Audit report by Friday.","evidenceText":["The report was published on GitBook."],"expectedStatus":"DELIVERED"}
+{"normalizedClaim":"V2 next week.","evidenceText":["No launch links have been posted."],"expectedStatus":"AMBIGUOUS"}
+{"normalizedClaim":"Mainnet launches tomorrow.","evidenceText":[],"expectedStatus":"AMBIGUOUS"}
+{"normalizedClaim":"Rewards after next phase.","evidenceText":["Rewards were delayed until next month."],"expectedStatus":"REFRAMED"}
+{"normalizedClaim":"Buybacks start this month.","evidenceText":["The plan is cancelled and replaced by treasury burns."],"expectedStatus":"SUPERSEDED"}
+{"normalizedClaim":"Public beta by Friday.","evidenceText":["The beta was postponed to next month."],"expectedStatus":"REFRAMED"}
+{"normalizedClaim":"Airdrop this week.","evidenceText":["Airdrop is live now."],"expectedStatus":"DELIVERED"}
+{"normalizedClaim":"Docs before April ends.","evidenceText":["Docs are published and accessible."],"expectedStatus":"DELIVERED"}
+

@@ -1,0 +1,42 @@
+{
+  "name": "clocked",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.11.0",
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "scripts": {
+    "dev": "corepack pnpm --parallel --stream --filter @clocked/web --filter @clocked/worker --filter @clocked/mcp-server run dev",
+    "build": "corepack pnpm -r --if-present run build",
+    "lint": "corepack pnpm -r --if-present run lint",
+    "typecheck": "corepack pnpm -r --if-present run typecheck",
+    "test": "corepack pnpm -r --if-present run test",
+    "db:generate": "corepack pnpm -C packages/db run generate",
+    "db:migrate": "corepack pnpm -C packages/db run migrate",
+    "db:seed": "corepack pnpm -C packages/db run seed",
+    "worker:dev": "corepack pnpm -C apps/worker run worker:dev",
+    "worker:fixtures": "corepack pnpm -C apps/worker run worker:fixtures",
+    "worker:heyanon-evidence": "corepack pnpm -C apps/worker run worker:heyanon-evidence",
+    "mcp:dev": "corepack pnpm -C apps/mcp-server run mcp:dev",
+    "eval:claims": "corepack pnpm -C packages/ai run eval:claims",
+    "eval:status": "corepack pnpm -C packages/ai run eval:status"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.1",
+    "@next/eslint-plugin-next": "^15.3.1",
+    "@types/node": "^22.15.17",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@typescript-eslint/eslint-plugin": "^8.30.1",
+    "@typescript-eslint/parser": "^8.30.1",
+    "eslint": "^9.25.1",
+    "eslint-config-prettier": "^10.1.2",
+    "prettier": "^3.5.3",
+    "turbo": "^2.5.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.30.1",
+    "vitest": "^3.1.2"
+  }
+}

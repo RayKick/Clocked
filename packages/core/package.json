@@ -1,0 +1,18 @@
+{
+  "name": "@clocked/core",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src tests",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
+    "slugify": "^1.6.6",
+    "zod": "^3.24.3"
+  }
+}
+

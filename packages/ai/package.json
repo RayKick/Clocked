@@ -1,0 +1,19 @@
+{
+  "name": "@clocked/ai",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src tests",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "eval:claims": "tsx src/runClaimEval.ts",
+    "eval:status": "tsx src/runStatusEval.ts"
+  },
+  "dependencies": {
+    "@clocked/core": "workspace:*",
+    "openai": "^4.104.0",
+    "zod": "^3.24.3"
+  }
+}
+

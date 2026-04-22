@@ -1,0 +1,9 @@
+{"primary":"Mainnet launches tomorrow.","candidate":"Mainnet launch is tomorrow.","expectedAction":"MERGE"}
+{"primary":"Public beta by Friday.","candidate":"The public beta ships Friday.","expectedAction":"LINK_ONLY"}
+{"primary":"Docs before April ends.","candidate":"We will publish docs before the end of April.","expectedAction":"LINK_ONLY"}
+{"primary":"Buybacks start this month.","candidate":"Treasury buybacks begin this month.","expectedAction":"LINK_ONLY"}
+{"primary":"Mainnet when ready.","candidate":"Mainnet soon.","expectedAction":"NO_ACTION"}
+{"primary":"Rewards after next phase.","candidate":"Rewards come after the next phase.","expectedAction":"NEEDS_REVIEW"}
+{"primary":"V2 next week.","candidate":"Version 2 release next week.","expectedAction":"LINK_ONLY"}
+{"primary":"Audit report in Q2.","candidate":"Q2 audit report release.","expectedAction":"LINK_ONLY"}
+

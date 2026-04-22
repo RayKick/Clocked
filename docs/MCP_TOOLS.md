@@ -1,0 +1,45 @@
+# MCP Tools
+
+CLOCKED exposes a public-safe MCP surface for claims, project records, actor records, due feeds, draft creation, and evidence submission.
+
+## Tools
+
+- `clocked.search_claims`
+  Input: `{ query?, projectSlug?, actorHandle?, status?, dueBefore?, limit? }`
+  Output: claim summaries with slug, project, actor, status, deadline, source URL, and public URL.
+- `clocked.get_claim`
+  Input: `{ slug }`
+  Output: public claim details, evidence timeline, and status history.
+- `clocked.get_project_record`
+  Input: `{ projectSlug }`
+  Output: project summary, counts by status, due-soon claims, latest claims, latest status changes, and factual summary.
+- `clocked.get_actor_record`
+  Input: `{ platform, handle }`
+  Output: actor profile, associated projects, counts by status, latest claims, and factual summary.
+- `clocked.get_due_claims`
+  Input: `{ timeframe, projectSlug?, limit? }`
+  Output: due or overdue claims.
+- `clocked.extract_claim_from_text`
+  Input: raw source text plus optional metadata.
+  Output: safe extraction result only. No claim creation.
+- `clocked.create_claim_draft`
+  Input: source text plus optional metadata.
+  Output: pending review item ID plus extraction payload.
+- `clocked.evaluate_claim_status`
+  Input: `claimSlug` plus optional evidence text or URLs.
+  Output: status evaluation result only. No automatic claim mutation.
+- `clocked.submit_evidence`
+  Input: claim slug plus evidence text or URL.
+  Output: pending evidence review item.
+- `clocked.get_weekly_digest`
+  Input: optional project or week filters.
+  Output: compact digest summary and share text.
+
+## Security Model
+
+- `MCP_API_KEY` is required for remote HTTP mode when configured.
+- All inputs are Zod-validated.
+- Only public-safe data is returned.
+- Tool invocations are logged to `McpInvocation`.
+- Secrets, admin passwords, and private review-only fields are excluded.
+

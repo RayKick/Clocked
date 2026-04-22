@@ -1,0 +1,22 @@
+{
+  "name": "@clocked/mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "mcp:dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@clocked/ai": "workspace:*",
+    "@clocked/core": "workspace:*",
+    "@clocked/db": "workspace:*",
+    "@clocked/heyanon": "workspace:*",
+    "dotenv": "^16.5.0",
+    "zod": "^3.24.3"
+  }
+}
+

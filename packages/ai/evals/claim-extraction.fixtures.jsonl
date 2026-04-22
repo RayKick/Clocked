@@ -1,0 +1,21 @@
+{"text":"V2 next week.","expectedVerdict":"CLOCKABLE"}
+{"text":"Mainnet launches tomorrow.","expectedVerdict":"CLOCKABLE"}
+{"text":"Buybacks start this month.","expectedVerdict":"CLOCKABLE"}
+{"text":"Public beta ships by Friday.","expectedVerdict":"CLOCKABLE"}
+{"text":"The audit report will be published in Q2.","expectedVerdict":"CLOCKABLE"}
+{"text":"We will publish the docs before the end of April.","expectedVerdict":"CLOCKABLE"}
+{"text":"Soon.","expectedVerdict":"NOT_CLOCKABLE"}
+{"text":"Cooking.","expectedVerdict":"NOT_CLOCKABLE"}
+{"text":"Big things coming.","expectedVerdict":"NOT_CLOCKABLE"}
+{"text":"We are exploring V2.","expectedVerdict":"NOT_CLOCKABLE"}
+{"text":"Mainnet when ready.","expectedVerdict":"NOT_CLOCKABLE"}
+{"text":"Buybacks eventually.","expectedVerdict":"NOT_CLOCKABLE"}
+{"text":"Beta soon, probably next week.","expectedVerdict":"NEEDS_REVIEW"}
+{"text":"Launch should be around Friday.","expectedVerdict":"NEEDS_REVIEW"}
+{"text":"We expect mainnet in the coming weeks.","expectedVerdict":"NEEDS_REVIEW"}
+{"text":"Audit is basically done.","expectedVerdict":"NEEDS_REVIEW"}
+{"text":"Rewards are coming after the next phase.","expectedVerdict":"NEEDS_REVIEW"}
+{"text":"Tokenomics PDF by Friday.","expectedVerdict":"CLOCKABLE"}
+{"text":"Testnet opens this week.","expectedVerdict":"CLOCKABLE"}
+{"text":"Airdrop details next week.","expectedVerdict":"CLOCKABLE"}
+
