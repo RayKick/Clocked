@@ -23,6 +23,7 @@
     "staging:seed": "corepack pnpm demo:seed",
     "staging:check-env": "corepack pnpm exec tsx ./scripts/staging-check-env.mjs",
     "staging:preflight": "corepack pnpm db:generate && corepack pnpm typecheck && corepack pnpm lint && corepack pnpm test && corepack pnpm build",
+    "staging:share-check": "corepack pnpm exec tsx ./scripts/staging-share-check.mjs",
     "staging:smoke:web": "corepack pnpm demo:smoke:web",
     "staging:smoke:mcp": "corepack pnpm demo:smoke:mcp",
     "staging:summary": "corepack pnpm demo:summary",

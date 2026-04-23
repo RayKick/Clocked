@@ -42,6 +42,13 @@ This is a deployment checklist for safe staging and later production readiness, 
 
 ## Safe Staging Deploy
 
+Preferred reviewer-staging shape:
+
+- one platform for the web app, MCP server, and optional worker
+- one managed Postgres database
+
+This keeps reviewer staging simpler than splitting services across multiple hosts while the product is still intentionally running in dry-run mode.
+
 ```bash
 corepack pnpm install
 corepack pnpm db:generate
@@ -58,6 +65,12 @@ corepack pnpm staging:smoke:mcp
 
 Use `STAGING_STRICT=true corepack pnpm staging:check-env` when you want missing staging secrets to fail the deploy preflight.
 
+Before sharing the reviewer URL, also run:
+
+```bash
+WEB_BASE_URL=https://your-staging-web.example.com corepack pnpm staging:share-check
+```
+
 Reviewer checklist:
 
 - open the homepage
@@ -70,6 +83,7 @@ Reviewer checklist:
 - test MCP `/health`, `/manifest`, `clocked.extract_claim_from_text`, `clocked.search_claims`, `clocked.get_claim`, and `clocked.get_project_record`
 - verify admin mutation endpoints reject unauthenticated requests
 - verify no live external writes are enabled
+- verify `staging:share-check` passes before sharing the URL
 
 ## Production Checklist
 

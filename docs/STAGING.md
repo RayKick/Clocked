@@ -2,6 +2,29 @@
 
 This guide describes the safe staging contract for reviewer-accessible CLOCKED deployments.
 
+## Recommended Reviewer Staging Shape
+
+The fastest reviewer staging setup for the current CLOCKED monorepo is a single platform that hosts:
+
+- the web app
+- the MCP server
+- a managed Postgres database
+- an optional worker process if you want deadline or evidence loops running continuously
+
+Recommended shape:
+
+- one platform for web + MCP + optional worker
+- one managed Postgres on the same platform or attached externally
+
+Why this is the default recommendation:
+
+- fewer moving parts for reviewer staging
+- easier base URL alignment for `APP_BASE_URL` and `CLOCKED_MCP_BASE_URL`
+- simpler smoke checks and rollback
+- lower risk of environment drift while X and HeyAnon integrations are still disabled
+
+You can still split services later, but reviewer staging should optimize for low operational complexity rather than maximum separation.
+
 ## Required Services
 
 - web app host
@@ -94,6 +117,23 @@ Public smoke checks:
 - `/due`
 - `/api/hud/project/example-protocol`
 - `/api/readiness`
+
+Before sharing the staging URL, run:
+
+```bash
+STAGING_STRICT=true corepack pnpm staging:check-env
+WEB_BASE_URL=https://your-staging-web.example.com corepack pnpm staging:share-check
+```
+
+`staging:share-check` confirms:
+
+- database is reachable
+- `SAFE_DRY_RUN=true`
+- `X_READ_ENABLED=false`
+- `X_POSTING_ENABLED=false`
+- `HEYANON_ENABLE_LIVE_CALLS=false`
+- `APP_BASE_URL` is configured
+- `ADMIN_PASSWORD` is set
 
 Admin mutations should only be tested with `x-clocked-admin-password`, not query parameter passwords.
 

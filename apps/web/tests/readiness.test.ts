@@ -26,7 +26,8 @@ describe("readiness route", () => {
       safeDryRun: true,
       xReadEnabled: false,
       xPostingEnabled: false,
-      heyAnonLiveCallsEnabled: false
+      heyAnonLiveCallsEnabled: false,
+      adminPasswordConfigured: false
     });
     expect(json).not.toHaveProperty("DATABASE_URL");
     expect(json).not.toHaveProperty("ADMIN_PASSWORD");

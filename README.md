@@ -206,9 +206,12 @@ corepack pnpm worker:start
 corepack pnpm staging:preflight
 corepack pnpm staging:smoke:web
 corepack pnpm staging:smoke:mcp
+WEB_BASE_URL=https://your-staging-web.example.com corepack pnpm staging:share-check
 ```
 
 Use `STAGING_STRICT=true corepack pnpm staging:check-env` when you want missing staging-only secrets to fail preflight instead of reporting warnings.
+
+For reviewer staging, the fastest setup is one platform for the web app, MCP server, and optional worker plus one managed Postgres database. Do not share the staging URL before `ADMIN_PASSWORD` is set and `staging:share-check` passes.
 
 Reviewer checklist:
 

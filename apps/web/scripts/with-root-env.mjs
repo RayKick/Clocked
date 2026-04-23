@@ -26,7 +26,9 @@ if (existsSync(rootEnvPath)) {
       value = value.slice(1, -1);
     }
 
-    process.env[key] = value;
+    if (!(key in process.env)) {
+      process.env[key] = value;
+    }
   }
 }
 

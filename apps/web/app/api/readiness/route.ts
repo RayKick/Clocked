@@ -21,6 +21,7 @@ export async function GET() {
     xPostingEnabled: safety.xPostingEnabled,
     heyAnonLiveCallsEnabled: safety.heyAnonLiveCallsEnabled,
     appBaseUrlConfigured: safety.appBaseUrlConfigured,
+    adminPasswordConfigured: safety.adminPasswordConfigured,
     timestamp: new Date().toISOString()
   });
 }

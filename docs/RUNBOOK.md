@@ -57,7 +57,8 @@ Fixtures are deterministic and should remain idempotent.
 - Set `ADMIN_PASSWORD` before exposing a staging deployment to reviewers.
 - Keep `ALLOW_ADMIN_QUERY_PASSWORD=false` in staging and use the `x-clocked-admin-password` header for protected mutations.
 - Use `/api/readiness` as the lightweight web readiness check.
-- `staging:seed`, `staging:smoke:web`, `staging:smoke:mcp`, and `staging:summary` are safe aliases for reviewer staging.
+- `staging:seed`, `staging:smoke:web`, `staging:smoke:mcp`, `staging:summary`, and `staging:share-check` are safe aliases for reviewer staging.
+- Do not share the staging URL until `staging:share-check` passes.
 
 ## Smoke Checks
 

@@ -41,14 +41,19 @@ async function assertJson(url, init) {
 loadEnvFile();
 
 const baseUrl = getMcpBaseUrl(process.env);
+const mcpApiKey = process.env.MCP_API_KEY?.trim();
+
+function withHeaders(headers = {}) {
+  return mcpApiKey ? { ...headers, "x-api-key": mcpApiKey } : headers;
+}
 
 try {
   console.log(`Using MCP base URL: ${baseUrl}`);
-  await assertJson(`${baseUrl}/health`);
-  await assertJson(`${baseUrl}/manifest`);
+  await assertJson(`${baseUrl}/health`, { headers: withHeaders() });
+  await assertJson(`${baseUrl}/manifest`, { headers: withHeaders() });
   await assertJson(`${baseUrl}/tools`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: withHeaders({ "content-type": "application/json" }),
     body: JSON.stringify({
       tool: "clocked.extract_claim_from_text",
       input: {
@@ -61,7 +66,7 @@ try {
   });
   await assertJson(`${baseUrl}/tools`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: withHeaders({ "content-type": "application/json" }),
     body: JSON.stringify({
       tool: "clocked.search_claims",
       input: { projectSlug: "example-protocol", limit: 10 }
@@ -69,7 +74,7 @@ try {
   });
   await assertJson(`${baseUrl}/tools`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: withHeaders({ "content-type": "application/json" }),
     body: JSON.stringify({
       tool: "clocked.get_claim",
       input: { slug: "example-protocol-will-ship-v2-next-week" }
@@ -77,7 +82,7 @@ try {
   });
   await assertJson(`${baseUrl}/tools`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: withHeaders({ "content-type": "application/json" }),
     body: JSON.stringify({
       tool: "clocked.get_project_record",
       input: { projectSlug: "example-protocol" }

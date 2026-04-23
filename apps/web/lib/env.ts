@@ -117,6 +117,7 @@ export function getRuntimeSafetyConfig() {
     xPostingEnabled: isXPostingEnabled(),
     heyAnonLiveCallsEnabled: isHeyAnonLiveCallsEnabled(),
     appBaseUrlConfigured: Boolean(process.env.APP_BASE_URL?.trim()),
+    adminPasswordConfigured: isAdminPasswordConfigured(),
     allowAdminQueryPassword: isAdminQueryPasswordAllowed()
   };
 }
