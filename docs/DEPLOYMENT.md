@@ -49,6 +49,27 @@ Preferred reviewer-staging shape:
 
 This keeps reviewer staging simpler than splitting services across multiple hosts while the product is still intentionally running in dry-run mode.
 
+### Before Deploy
+
+- GitHub repository is pushed and reachable from the host or deploy platform
+- milestone tags are pushed:
+  - `v0.2-reviewer-ready-x-ingest`
+  - `v0.3-staging-ready`
+  - `v0.3.1-staging-docs`
+- hosted Postgres is created
+- `DATABASE_URL` is copied into staging env
+- `ADMIN_PASSWORD` is generated and stored in the hosting platform
+- `HUD_EXPORT_SECRET` is generated and stored in the hosting platform
+- `MCP_API_KEY` is generated and stored in the hosting platform
+- safe flags are set:
+  - `SAFE_DRY_RUN=true`
+  - `X_READ_ENABLED=false`
+  - `X_POSTING_ENABLED=false`
+  - `HEYANON_ENABLE_LIVE_CALLS=false`
+  - `ALLOW_ADMIN_QUERY_PASSWORD=false`
+
+### Deploy
+
 ```bash
 corepack pnpm install
 corepack pnpm db:generate
@@ -71,7 +92,7 @@ Before sharing the reviewer URL, also run:
 WEB_BASE_URL=https://your-staging-web.example.com corepack pnpm staging:share-check
 ```
 
-Reviewer checklist:
+### After Deploy
 
 - open the homepage
 - open the project page

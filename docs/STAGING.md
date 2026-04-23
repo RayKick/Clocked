@@ -2,9 +2,31 @@
 
 This guide describes the safe staging contract for reviewer-accessible CLOCKED deployments.
 
-## Recommended Reviewer Staging Shape
+## Recommended Reviewer Staging Setup
 
-The fastest reviewer staging setup for the current CLOCKED monorepo is a single platform that hosts:
+Option B is the recommended reviewer-staging setup for the current CLOCKED monorepo: run the web app, MCP server, and optional worker on one platform, backed by hosted Postgres.
+
+This staging shape should keep the following flags locked:
+
+- `SAFE_DRY_RUN=true`
+- `X_READ_ENABLED=false`
+- `X_POSTING_ENABLED=false`
+- `HEYANON_ENABLE_LIVE_CALLS=false`
+
+Before sharing the staging URL:
+
+- set `ADMIN_PASSWORD`
+- set `APP_BASE_URL` to the hosted web URL
+- set `CLOCKED_MCP_BASE_URL` to the hosted MCP URL
+
+Why this is the default recommendation:
+
+- fewer moving parts for reviewer staging
+- easier base URL alignment for `APP_BASE_URL` and `CLOCKED_MCP_BASE_URL`
+- simpler smoke checks and rollback
+- lower risk of environment drift while X and HeyAnon integrations are still disabled
+
+The fastest reviewer staging setup in practice is a single platform that hosts:
 
 - the web app
 - the MCP server
@@ -15,13 +37,6 @@ Recommended shape:
 
 - one platform for web + MCP + optional worker
 - one managed Postgres on the same platform or attached externally
-
-Why this is the default recommendation:
-
-- fewer moving parts for reviewer staging
-- easier base URL alignment for `APP_BASE_URL` and `CLOCKED_MCP_BASE_URL`
-- simpler smoke checks and rollback
-- lower risk of environment drift while X and HeyAnon integrations are still disabled
 
 You can still split services later, but reviewer staging should optimize for low operational complexity rather than maximum separation.
 
