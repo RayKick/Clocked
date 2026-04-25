@@ -42,8 +42,36 @@ export function isHeyAnonLiveCallsEnabled(): boolean {
   return process.env.HEYANON_ENABLE_LIVE_CALLS === "true";
 }
 
+export function isHostedProduction(): boolean {
+  return process.env.VERCEL_ENV === "production";
+}
+
+export function isDemoFallbackEnabled(): boolean {
+  if (process.env.ENABLE_DEMO_FALLBACK === "true") {
+    return true;
+  }
+
+  if (process.env.ENABLE_DEMO_FALLBACK === "false") {
+    return false;
+  }
+
+  return !isHostedProduction();
+}
+
+export function shouldShowSampleRecords(): boolean {
+  if (process.env.SHOW_SAMPLE_RECORDS === "true") {
+    return true;
+  }
+
+  if (process.env.SHOW_SAMPLE_RECORDS === "false") {
+    return false;
+  }
+
+  return !isHostedProduction();
+}
+
 export function shouldRequireAdminPassword(): boolean {
-  return !isSafeDryRunEnabled() || isAdminPasswordConfigured();
+  return isHostedProduction() || !isSafeDryRunEnabled() || isAdminPasswordConfigured();
 }
 
 export function getAdminUiState() {

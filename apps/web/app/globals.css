@@ -974,6 +974,38 @@ button.secondary:hover {
   text-transform: uppercase;
 }
 
+.sample-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+  padding: 0.78rem 0.9rem;
+  border: 1px solid rgba(244, 182, 74, 0.24);
+  border-radius: var(--radius-md);
+  background: rgba(244, 182, 74, 0.07);
+  color: var(--muted);
+}
+
+.sample-notice strong {
+  color: #fff;
+}
+
+.record-kind-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 1.55rem;
+  padding: 0.18rem 0.52rem;
+  border: 1px solid rgba(244, 182, 74, 0.28);
+  border-radius: 999px;
+  background: rgba(244, 182, 74, 0.1);
+  color: #ffd58b;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .content-grid,
 .detail-grid {
   display: grid;
@@ -1014,6 +1046,87 @@ button.secondary:hover {
 
 .card-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.project-index-grid,
+.endpoint-grid,
+.mcp-tool-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.project-index-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.project-index-card {
+  text-decoration: none;
+}
+
+.project-index-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.project-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.project-metrics span {
+  padding: 0.3rem 0.52rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 780;
+}
+
+.endpoint-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.endpoint-card {
+  align-content: start;
+}
+
+.endpoint-method {
+  width: fit-content;
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(70, 230, 166, 0.1);
+  color: var(--brand-strong);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.endpoint-card code,
+.mcp-tool-grid code {
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.endpoint-card p {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.mcp-tool-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mcp-tool-grid code {
+  padding: 0.78rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--brand-strong);
+  overflow-wrap: anywhere;
 }
 
 .stats-grid {
@@ -2464,6 +2577,9 @@ code,
   .step-list,
   .proof-strip,
   .card-grid,
+  .project-index-grid,
+  .endpoint-grid,
+  .mcp-tool-grid,
   .use-case-grid,
   .methodology-index {
     grid-template-columns: 1fr;

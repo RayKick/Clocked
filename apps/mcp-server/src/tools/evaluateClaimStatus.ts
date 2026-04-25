@@ -2,6 +2,8 @@ import { evaluateClaimStatus } from "@clocked/ai";
 import { prisma } from "@clocked/db";
 import { z } from "zod";
 
+import { getAiMode } from "../aiMode";
+
 export const evaluateClaimStatusInputSchema = z.object({
   claimSlug: z.string().min(1),
   evidenceUrls: z.array(z.string().url()).optional(),
@@ -34,7 +36,6 @@ export async function evaluateClaimStatusTool(input: unknown) {
       evidenceUrls: parsed.evidenceUrls ?? [],
       evidenceText: parsed.evidenceText ?? []
     },
-    { mode: "mock" }
+    { mode: getAiMode() }
   );
 }
-

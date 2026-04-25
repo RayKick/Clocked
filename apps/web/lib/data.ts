@@ -17,7 +17,7 @@ import {
   getDemoDueBuckets,
   getDemoProjectRecordBySlug
 } from "./demoData";
-import { getAppBaseUrl } from "./env";
+import { getAppBaseUrl, isDemoFallbackEnabled, shouldShowSampleRecords } from "./env";
 
 const claimInclude = {
   project: true,
@@ -43,6 +43,10 @@ function withExampleClaims(
     limit?: number;
   }
 ) {
+  if (!shouldShowSampleRecords()) {
+    return claims.slice(0, filters.limit ?? 50);
+  }
+
   const limit = filters.limit ?? 50;
   const existingSlugs = new Set(claims.map((claim) => claim.publicSlug));
   const examples = getDemoClaims({ ...filters, limit }).filter(
@@ -50,7 +54,7 @@ function withExampleClaims(
   );
 
   if (!filters.projectSlug && !filters.actorHandle && !filters.query) {
-    return [...examples, ...claims].slice(0, limit);
+    return [...claims, ...examples].slice(0, limit);
   }
 
   return [...claims, ...examples].slice(0, limit);
@@ -155,7 +159,11 @@ export async function getClaims(filters: {
 
     return withExampleClaims(claims.map(mapClaim), filters);
   } catch {
-    return getDemoClaims(filters);
+    if (isDemoFallbackEnabled() || shouldShowSampleRecords()) {
+      return getDemoClaims(filters);
+    }
+
+    return [];
   }
 }
 
@@ -166,9 +174,17 @@ export async function getClaimBySlug(slug: string) {
       include: claimInclude
     });
 
-    return claim ? mapClaim(claim) : getDemoClaimBySlug(slug);
+    return claim
+      ? mapClaim(claim)
+      : isDemoFallbackEnabled() || shouldShowSampleRecords()
+        ? getDemoClaimBySlug(slug)
+        : null;
   } catch {
-    return getDemoClaimBySlug(slug);
+    if (isDemoFallbackEnabled() || shouldShowSampleRecords()) {
+      return getDemoClaimBySlug(slug);
+    }
+
+    return null;
   }
 }
 
@@ -187,11 +203,17 @@ export async function getProjectRecordBySlug(projectSlug: string) {
       }
     });
   } catch {
-    return getDemoProjectRecordBySlug(projectSlug);
+    if (isDemoFallbackEnabled() || shouldShowSampleRecords()) {
+      return getDemoProjectRecordBySlug(projectSlug);
+    }
+
+    return null;
   }
 
   if (!project) {
-    return getDemoProjectRecordBySlug(projectSlug);
+    return isDemoFallbackEnabled() || shouldShowSampleRecords()
+      ? getDemoProjectRecordBySlug(projectSlug)
+      : null;
   }
 
   const claims = withExampleClaims(project.claims.map(mapClaim), {
@@ -244,11 +266,17 @@ export async function getActorRecordByHandle(
       }
     });
   } catch {
-    return getDemoActorRecordByHandle(platform, handle);
+    if (isDemoFallbackEnabled() || shouldShowSampleRecords()) {
+      return getDemoActorRecordByHandle(platform, handle);
+    }
+
+    return null;
   }
 
   if (!actor) {
-    return getDemoActorRecordByHandle(platform, handle);
+    return isDemoFallbackEnabled() || shouldShowSampleRecords()
+      ? getDemoActorRecordByHandle(platform, handle)
+      : null;
   }
 
   const claims = withExampleClaims(actor.claims.map(mapClaim), {

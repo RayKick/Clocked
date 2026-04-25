@@ -2,6 +2,8 @@ import { extractClaim } from "@clocked/ai";
 import { prisma } from "@clocked/db";
 import { z } from "zod";
 
+import { getAiMode } from "../aiMode";
+
 export const createClaimDraftInputSchema = z.object({
   sourceUrl: z.string().url().optional(),
   sourceText: z.string().min(1),
@@ -19,7 +21,7 @@ export async function createClaimDraftTool(input: unknown) {
       sourceAuthorHandle: parsed.actorHandle,
       projectName: parsed.projectName
     },
-    { mode: "mock" }
+    { mode: getAiMode() }
   );
 
   const reviewItem = await prisma.reviewItem.create({
@@ -55,4 +57,3 @@ export async function createClaimDraftTool(input: unknown) {
     message: "Created a pending review item. No public claim has been created yet."
   };
 }
-

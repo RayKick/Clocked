@@ -3,6 +3,8 @@ import { createClaimSlug, createProjectSlug } from "@clocked/core";
 import { prisma } from "@clocked/db";
 import { NextResponse } from "next/server";
 
+import { getAiMode } from "../../../../lib/aiMode";
+
 export async function POST(request: Request) {
   const body = await request.json();
   const extraction = await extractClaim(
@@ -12,7 +14,7 @@ export async function POST(request: Request) {
       sourceAuthorHandle: body.targetAuthorHandle,
       projectName: body.projectName
     },
-    { mode: "mock" }
+    { mode: getAiMode() }
   );
 
   const sourcePost = await prisma.sourcePost.create({
@@ -73,4 +75,3 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ ok: true, triggerId: trigger.id, extraction });
 }
-

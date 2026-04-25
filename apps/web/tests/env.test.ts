@@ -3,8 +3,20 @@ import { describe, expect, it } from "vitest";
 import {
   getAppBaseUrl,
   getRuntimeSafetyConfig,
-  isAdminQueryPasswordAllowed
+  isAdminQueryPasswordAllowed,
+  isDemoFallbackEnabled,
+  shouldShowSampleRecords,
+  shouldRequireAdminPassword
 } from "../lib/env";
+
+function restoreEnv(name: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[name];
+    return;
+  }
+
+  process.env[name] = value;
+}
 
 describe("env helpers", () => {
   it("returns a fallback base url", () => {
@@ -24,5 +36,25 @@ describe("env helpers", () => {
       heyAnonLiveCallsEnabled: false,
       allowAdminQueryPassword: false
     });
+  });
+
+  it("does not enable silent demo fallback in hosted production by default", () => {
+    const previousVercelEnv = process.env.VERCEL_ENV;
+    const previousDemoFallback = process.env.ENABLE_DEMO_FALLBACK;
+    const previousSampleRecords = process.env.SHOW_SAMPLE_RECORDS;
+    const previousAdminPassword = process.env.ADMIN_PASSWORD;
+    process.env.VERCEL_ENV = "production";
+    delete process.env.ENABLE_DEMO_FALLBACK;
+    delete process.env.SHOW_SAMPLE_RECORDS;
+    delete process.env.ADMIN_PASSWORD;
+
+    expect(isDemoFallbackEnabled()).toBe(false);
+    expect(shouldShowSampleRecords()).toBe(false);
+    expect(shouldRequireAdminPassword()).toBe(true);
+
+    restoreEnv("VERCEL_ENV", previousVercelEnv);
+    restoreEnv("ENABLE_DEMO_FALLBACK", previousDemoFallback);
+    restoreEnv("SHOW_SAMPLE_RECORDS", previousSampleRecords);
+    restoreEnv("ADMIN_PASSWORD", previousAdminPassword);
   });
 });

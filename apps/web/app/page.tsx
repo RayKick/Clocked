@@ -23,6 +23,13 @@ const trustSignals = [
   "Machine-readable"
 ];
 
+const sortOptions = [
+  { label: "Recently updated", value: "recent" },
+  { label: "Due soon", value: "deadline" },
+  { label: "Project", value: "project" },
+  { label: "Status", value: "status" }
+];
+
 const clockClaimUrl =
   "https://x.com/intent/tweet?text=%40ClockedBot%20clock%20this%20%5Bpaste%20public%20source%20link%5D";
 
@@ -170,6 +177,7 @@ export default async function HomePage({
   const params = (await searchParams) ?? {};
   const status = typeof params.status === "string" ? params.status : "OPEN";
   const query = typeof params.q === "string" ? params.q : undefined;
+  const sort = typeof params.sort === "string" ? params.sort : "recent";
   const [claims, allClaims] = await Promise.all([
     getClaims({ status, query, limit: 24 }),
     getClaims({ query, limit: 100 })
@@ -178,10 +186,26 @@ export default async function HomePage({
   const activeLabel =
     activeTab.label === "Due Soon" ? "Due soon" : getPublicStatusLabel(status as never);
   const launchClaims = [
-    ...claims.filter((claim) => claim.id.startsWith("sample-")),
-    ...claims.filter((claim) => !claim.id.startsWith("sample-"))
-  ];
+    ...claims.filter((claim) => !claim.id.startsWith("sample-")),
+    ...claims.filter((claim) => claim.id.startsWith("sample-"))
+  ].sort((a, b) => {
+    if (sort === "deadline") {
+      return (a.deadlineAt?.getTime() ?? Number.MAX_SAFE_INTEGER) -
+        (b.deadlineAt?.getTime() ?? Number.MAX_SAFE_INTEGER);
+    }
+
+    if (sort === "project") {
+      return (a.project?.name ?? "").localeCompare(b.project?.name ?? "");
+    }
+
+    if (sort === "status") {
+      return a.status.localeCompare(b.status);
+    }
+
+    return b.updatedAt.getTime() - a.updatedAt.getTime();
+  });
   const featuredClaims = launchClaims.slice(0, 3);
+  const sampleReceiptCount = launchClaims.filter((claim) => claim.id.startsWith("sample-")).length;
   const dueSoonCount = allClaims.filter(
     (claim) =>
       claim.status === "OPEN" &&
@@ -190,6 +214,8 @@ export default async function HomePage({
   ).length;
   const deliveredCount = allClaims.filter((claim) => claim.status === "DELIVERED").length;
   const slippedCount = allClaims.filter((claim) => claim.status === "SLIPPED").length;
+  const isExampleLayer =
+    allClaims.length > 0 && allClaims.every((claim) => claim.id.startsWith("sample-"));
 
   return (
     <PageShell>
@@ -225,19 +251,19 @@ export default async function HomePage({
 
       <div className="proof-strip reveal-delayed" aria-label="Record summary">
         <div>
-          <strong>{allClaims.length || 148}</strong>
-          <span>receipts</span>
+          <strong>{allClaims.length}</strong>
+          <span>{isExampleLayer ? "example receipts" : "receipts"}</span>
         </div>
         <div>
-          <strong>{dueSoonCount || 27}</strong>
+          <strong>{dueSoonCount}</strong>
           <span>due soon</span>
         </div>
         <div>
-          <strong>{deliveredCount || 41}</strong>
+          <strong>{deliveredCount}</strong>
           <span>delivered</span>
         </div>
         <div>
-          <strong>{slippedCount || 19}</strong>
+          <strong>{slippedCount}</strong>
           <span>slipped</span>
         </div>
       </div>
@@ -319,6 +345,16 @@ export default async function HomePage({
               placeholder="Search project, founder, ticker, source..."
             />
           </label>
+          <label>
+            <span>Sort</span>
+            <select name="sort" defaultValue={sort}>
+              {sortOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <button className="button secondary" type="submit">
             Search
           </button>
@@ -328,6 +364,14 @@ export default async function HomePage({
             </Link>
           ) : null}
         </form>
+        {sampleReceiptCount > 0 ? (
+          <div className="sample-notice" role="note">
+            <strong>{sampleReceiptCount} example receipts shown.</strong>
+            <span>
+              Example records are marked clearly. Reviewed public records appear ahead of examples when available.
+            </span>
+          </div>
+        ) : null}
         <ClaimGrid claims={featuredClaims} emptyTitle={`No ${activeLabel} receipts yet.`} />
       </SectionShell>
 
@@ -357,14 +401,14 @@ export default async function HomePage({
         body="Built for agents, readable by humans. Human-readable pages and machine-readable records stay aligned."
       >
         <div className="agent-panel">
-          <pre className="code-block">{`GET /api/public/claims?query=atlas-labs
-GET /api/hud/project/atlas-labs
+          <pre className="code-block">{`GET /api/public/claims?query=nova-chain
+GET /api/hud/project/nova-chain
 
 {
-  "project": "Atlas Labs",
-  "claim": "Atlas Labs will open mainnet public beta by 30 Apr 2026.",
+  "project": "NovaChain",
+  "claim": "NovaChain will ship a public testnet explorer by 3 May 2026.",
   "status": "OPEN",
-  "deadline": "2026-04-30T23:59:00Z",
+  "deadline": "2026-05-03T23:59:00Z",
   "source": "x.com/..."
 }`}</pre>
           <span className="agent-format">JSON</span>

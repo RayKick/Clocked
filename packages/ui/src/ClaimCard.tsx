@@ -16,6 +16,7 @@ export interface ClaimCardProps {
   actorHandle?: string | null;
   deadlineText?: string | null;
   deadlineAt?: string | null;
+  recordLabel?: string | null;
 }
 
 export function ClaimCard(props: ClaimCardProps) {
@@ -27,7 +28,7 @@ export function ClaimCard(props: ClaimCardProps) {
     <article className="surface-card surface-card--interactive claim-card receipt-card">
       <div className="receipt-card-top">
         <div>
-          <span className="mini-label">CLOCKED receipt</span>
+          <span className="mini-label">{props.recordLabel ?? "CLOCKED receipt"}</span>
           <strong>{props.projectName ?? "Example project"}</strong>
           {props.actorHandle ? <small>@{props.actorHandle}</small> : null}
         </div>
@@ -65,6 +66,7 @@ export function ClaimCard(props: ClaimCardProps) {
       <div className="claim-card-footer receipt-card-footer">
         <span className="mono-id">{props.receiptId ?? `/c/${props.slug}`}</span>
         <span className="claim-card-date">{metadata || props.sourceLabel || "Source-linked"}</span>
+        {props.recordLabel ? <span className="record-kind-badge">{props.recordLabel}</span> : null}
       </div>
     </article>
   );

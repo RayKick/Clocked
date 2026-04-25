@@ -4,6 +4,8 @@ import { prisma, type Prisma } from "@clocked/db";
 import { parseXUrl, canReadFromX, createXClient, readXEnvironment } from "@clocked/x-client";
 import { z } from "zod";
 
+import { getAiMode } from "./aiMode";
+
 const ingestXPostInputSchema = z.object({
   url: z.string().url(),
   sourceText: z.string().trim().min(1).optional(),
@@ -226,7 +228,7 @@ export async function ingestXPost(input: unknown) {
       sourceAuthorHandle: resolvedSource.authorHandle,
       projectName: project?.name
     },
-    { mode: "mock" }
+    { mode: getAiMode() }
   );
 
   const projectName =

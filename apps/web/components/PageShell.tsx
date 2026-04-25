@@ -26,12 +26,12 @@ export function PageShell(props: { children: ReactNode }) {
               <Link href="/methodology" className="site-nav-link">
                 Methodology
               </Link>
-              <Link href="/p/atlas-labs" className="site-nav-link">
+              <Link href="/projects" className="site-nav-link">
                 Projects
               </Link>
-              <a href="/api/hud/project/atlas-labs" className="site-nav-link">
+              <Link href="/api" className="site-nav-link">
                 API
-              </a>
+              </Link>
             </nav>
           </div>
         </header>
@@ -45,7 +45,8 @@ export function PageShell(props: { children: ReactNode }) {
             <Link href="/">Receipts</Link>
             <Link href="/due">Due Soon</Link>
             <Link href="/methodology">Methodology</Link>
-            <a href="/api/hud/project/atlas-labs">API</a>
+            <Link href="/projects">Projects</Link>
+            <Link href="/api">API</Link>
             <a href="https://x.com/ClockedBot">X</a>
           </div>
         </footer>

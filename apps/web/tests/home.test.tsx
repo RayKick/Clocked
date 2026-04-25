@@ -26,5 +26,10 @@ describe("home page", () => {
     expect(html).toContain("How CLOCKED works");
     expect(html).toContain("Built for agents");
     expect(html).toContain("CLOCKED is not a dunk bot");
+    expect(html).toContain("href=\"/projects\"");
+    expect(html).toContain("href=\"/api\"");
+    expect(html).not.toContain("148");
+    expect(html).not.toContain("href=\"/p/atlas-labs\"");
+    expect(html).not.toContain("href=\"/api/hud/project/atlas-labs\"");
   });
 });

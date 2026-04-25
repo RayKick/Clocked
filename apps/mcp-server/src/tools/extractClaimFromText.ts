@@ -1,6 +1,8 @@
 import { extractClaim } from "@clocked/ai";
 import { z } from "zod";
 
+import { getAiMode } from "../aiMode";
+
 export const extractClaimFromTextInputSchema = z.object({
   text: z.string().min(1),
   sourcePostedAt: z.string().datetime().optional(),
@@ -9,6 +11,5 @@ export const extractClaimFromTextInputSchema = z.object({
 });
 
 export async function extractClaimFromTextTool(input: unknown) {
-  return extractClaim(extractClaimFromTextInputSchema.parse(input), { mode: "mock" });
+  return extractClaim(extractClaimFromTextInputSchema.parse(input), { mode: getAiMode() });
 }
-

@@ -67,11 +67,6 @@ async function logInvocationSafe(input: {
 }
 
 export async function handleMcpRequest(request: Request): Promise<Response> {
-  const auth = authorizeRequest(request);
-  if (!auth.ok) {
-    return Response.json({ error: auth.reason }, { status: 401 });
-  }
-
   const url = new URL(request.url);
 
   if (url.pathname === "/health") {
@@ -83,6 +78,11 @@ export async function handleMcpRequest(request: Request): Promise<Response> {
   }
 
   if (url.pathname === "/tools" && request.method === "POST") {
+    const auth = authorizeRequest(request);
+    if (!auth.ok) {
+      return Response.json({ error: auth.reason }, { status: 401 });
+    }
+
     const body = (await request.json()) as { tool: keyof typeof toolMap; input: unknown };
     const tool = toolMap[body.tool];
     if (!tool) {

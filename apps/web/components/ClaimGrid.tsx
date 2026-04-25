@@ -27,23 +27,28 @@ export function ClaimGrid(props: {
 
   return (
     <div className="card-grid">
-      {claims.map((claim) => (
-        <Link key={claim.id} href={`/c/${claim.publicSlug}`} className="card-link">
-          <ClaimCard
-            slug={claim.publicSlug}
-            status={claim.status}
-            normalizedClaim={claim.normalizedClaim}
-            sourceQuote={claim.sourceQuote}
-            evidenceRequired={claim.deliverable}
-            sourceLabel={claim.sourcePost.platform}
-            receiptId={formatReceiptId(claim.id)}
-            projectName={claim.project?.name}
-            actorHandle={claim.actor?.handle}
-            deadlineText={claim.deadlineText}
-            deadlineAt={claim.deadlineAt?.toISOString()}
-          />
-        </Link>
-      ))}
+      {claims.map((claim) => {
+        const isExample = claim.id.startsWith("sample-");
+
+        return (
+          <Link key={claim.id} href={`/c/${claim.publicSlug}`} className="card-link">
+            <ClaimCard
+              slug={claim.publicSlug}
+              status={claim.status}
+              normalizedClaim={claim.normalizedClaim}
+              sourceQuote={claim.sourceQuote}
+              evidenceRequired={claim.deliverable}
+              sourceLabel={claim.sourcePost.platform}
+              receiptId={formatReceiptId(claim.id)}
+              projectName={claim.project?.name}
+              actorHandle={claim.actor?.handle}
+              deadlineText={claim.deadlineText}
+              deadlineAt={claim.deadlineAt?.toISOString()}
+              recordLabel={isExample ? "Example receipt" : null}
+            />
+          </Link>
+        );
+      })}
     </div>
   );
 }

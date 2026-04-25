@@ -44,6 +44,17 @@ export default async function ClaimPage({
   const sourceUrl = claim.sourcePost.url;
   const sourceCapturedAt = claim.sourcePost.capturedAt;
   const sourceHash = claim.sourcePost.contentHash.slice(0, 12);
+  const isExampleReceipt = claim.id.startsWith("sample-");
+  const shareText = [
+    `CLOCKED receipt: ${claim.normalizedClaim}`,
+    "",
+    `Status: ${getPublicStatusLabel(claim.status)}`,
+    `Deadline: ${claim.deadlineText ?? "preserved"}`,
+    "Source preserved.",
+    "",
+    publicUrl
+  ].join("\n");
+  const xShareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
 
   return (
     <PageShell>
@@ -61,7 +72,7 @@ export default async function ClaimPage({
             </div>
             <StatusBadge status={claim.status} />
           </div>
-          <span className="eyebrow">Public receipt</span>
+          <span className="eyebrow">{isExampleReceipt ? "Example receipt" : "Public receipt"}</span>
           <h1>{claim.normalizedClaim}</h1>
           <p>{getStatusBodyCopy(claim.status)}</p>
           <div className="hero-receipt-rows">
@@ -89,11 +100,19 @@ export default async function ClaimPage({
           <div className="hero-receipt-footer">
             <span>Receipt ID</span>
             <strong>{receiptId}</strong>
-            <a href={publicUrl}>Share ↗</a>
+            <a href={xShareUrl} target="_blank" rel="noreferrer">
+              Share on X ↗
+            </a>
           </div>
         </div>
 
         <aside className="receipt-sidebar">
+          {isExampleReceipt ? (
+            <div className="sample-notice" role="note">
+              <strong>Example receipt.</strong>
+              <span>This record is marked as product-preview data, not a verified production receipt.</span>
+            </div>
+          ) : null}
           <div className="surface-card">
             <span className="card-kicker">Source proof</span>
             <div className="source-proof">

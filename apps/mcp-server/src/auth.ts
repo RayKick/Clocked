@@ -1,6 +1,10 @@
 export function authorizeRequest(request: Request): { ok: boolean; reason?: string } {
   const expected = process.env.MCP_API_KEY;
   if (!expected) {
+    if (process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production") {
+      return { ok: false, reason: "MCP_API_KEY is required in production." };
+    }
+
     return { ok: true };
   }
 
@@ -11,4 +15,3 @@ export function authorizeRequest(request: Request): { ok: boolean; reason?: stri
 
   return { ok: true };
 }
-
