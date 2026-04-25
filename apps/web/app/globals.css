@@ -949,6 +949,31 @@ button.secondary:hover {
   color: #fff;
 }
 
+.ledger-toolbar {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto auto;
+  gap: 0.75rem;
+  align-items: end;
+  margin-bottom: 1rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.ledger-toolbar label {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.ledger-toolbar label > span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
 .content-grid,
 .detail-grid {
   display: grid;
@@ -2102,6 +2127,40 @@ code,
   top: 6rem;
 }
 
+.source-proof {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.source-proof > div {
+  display: grid;
+  gap: 0.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.source-proof > div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.source-proof span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.source-proof strong {
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+
+.source-proof-action {
+  width: fit-content;
+}
+
 .methodology-index {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -2128,6 +2187,46 @@ code,
   top: 0.84rem;
   color: var(--brand-strong);
   font-weight: 900;
+}
+
+.examples-table {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.examples-table-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.15fr) minmax(100px, 0.35fr) minmax(220px, 1fr);
+  gap: 1rem;
+  align-items: center;
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-strong);
+}
+
+.examples-table-row:last-child {
+  border-bottom: 0;
+}
+
+.examples-table-row--head {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.examples-table-row strong {
+  color: #fff;
+  line-height: 1.4;
+}
+
+.good {
+  color: var(--brand-strong);
+  font-weight: 850;
 }
 
 .reveal {
@@ -2249,6 +2348,10 @@ code,
     grid-template-columns: 1fr;
   }
 
+  .examples-table-row {
+    grid-template-columns: 1fr;
+  }
+
   .record-table-head,
   .record-table-row {
     grid-template-columns: 120px minmax(0, 1fr) 110px 110px;
@@ -2324,6 +2427,10 @@ code,
 
   .wordmark-caption {
     display: none;
+  }
+
+  .ledger-toolbar {
+    grid-template-columns: 1fr;
   }
 
   .hero h1,

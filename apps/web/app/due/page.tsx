@@ -26,8 +26,8 @@ export default async function DuePage() {
           <span className="eyebrow">Due soon</span>
           <h1 className="page-intro-title">Deadlines approaching. Receipts waiting for outcome.</h1>
           <p className="page-intro-body">
-            Track open promises near deadline, overdue records that need review,
-            and recently resolved outcomes.
+            These claims are about to resolve. Watch what ships, slips, or gets
+            reframed.
           </p>
           <p className="page-intro-body">{buckets.digest}</p>
           <div className="segmented">

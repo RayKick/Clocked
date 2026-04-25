@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "next/link";
 import { SectionShell } from "@clocked/ui";
 
 import { PageShell } from "../../components/PageShell";
@@ -69,6 +68,37 @@ const methodologySections = [
   }
 ];
 
+const clockabilityExamples = [
+  {
+    source: "SDK v1 ships before May 15.",
+    clockable: "Yes",
+    why: "Specific deliverable and deadline."
+  },
+  {
+    source: "Big things coming soon.",
+    clockable: "No",
+    why: "No concrete deliverable or deadline."
+  },
+  {
+    source: "Q2 governance module.",
+    clockable: "Yes",
+    why: "Delivery window can be normalized."
+  },
+  {
+    source: "Token will 10x.",
+    clockable: "No",
+    why: "Price prediction, not a delivery claim."
+  },
+  {
+    source: "Audit report this month.",
+    clockable: "Yes",
+    why: "Deliverable and time window are clear."
+  }
+];
+
+const clockClaimUrl =
+  "https://x.com/intent/tweet?text=%40ClockedBot%20clock%20this%20%5Bpaste%20public%20source%20link%5D";
+
 export default function MethodologyPage() {
   return (
     <PageShell>
@@ -79,6 +109,8 @@ export default function MethodologyPage() {
           <p className="page-intro-body">
             CLOCKED preserves public claims, deadlines, evidence, and reviewed
             status changes. Status labels describe the public record only.
+            We preserve the record. We do not score teams, predict intent, or turn
+            ambiguity into drama.
           </p>
           <div className="watch-strip" aria-label="Methodology guarantees">
             <span>Claims must be public</span>
@@ -112,14 +144,36 @@ export default function MethodologyPage() {
         </SectionShell>
       ))}
 
+      <SectionShell
+        title="Examples"
+        body="Clockability is decided from the public source, not from vibes or reputation."
+      >
+        <div className="examples-table" role="table" aria-label="Clockability examples">
+          <div className="examples-table-row examples-table-row--head" role="row">
+            <span role="columnheader">Source statement</span>
+            <span role="columnheader">Clockable?</span>
+            <span role="columnheader">Why</span>
+          </div>
+          {clockabilityExamples.map((example) => (
+            <div key={example.source} className="examples-table-row" role="row">
+              <strong role="cell">“{example.source}”</strong>
+              <span role="cell" className={example.clockable === "Yes" ? "good" : "muted-copy"}>
+                {example.clockable}
+              </span>
+              <span role="cell">{example.why}</span>
+            </div>
+          ))}
+        </div>
+      </SectionShell>
+
       <section className="final-cta reveal">
         <div>
           <h2>Clock the next promise before it gets forgotten.</h2>
           <p>Turn public crypto claims into permanent, source-linked receipts.</p>
         </div>
-        <Link href="/#clock-this" className="button">
-          Start clocking →
-        </Link>
+        <a href={clockClaimUrl} className="button" target="_blank" rel="noreferrer">
+          Clock a claim →
+        </a>
       </section>
     </PageShell>
   );

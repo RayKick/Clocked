@@ -10,6 +10,16 @@ import { getProjectRecordBySlug } from "../../../lib/data";
 
 export const dynamic = "force-dynamic";
 
+function publicProjectDescription(description: string | null | undefined) {
+  if (!description) return null;
+
+  if (description.toLowerCase().includes("demo project record")) {
+    return "Example project record showing how CLOCKED preserves source-linked delivery claims, deadlines, and reviewed outcomes.";
+  }
+
+  return description;
+}
+
 export default async function ProjectPage({
   params
 }: {
@@ -40,6 +50,7 @@ export default async function ProjectPage({
       tone: "neutral" as const
     }
   ];
+  const description = publicProjectDescription(record.project.description);
 
   return (
     <PageShell>
@@ -47,9 +58,7 @@ export default async function ProjectPage({
         <div className="hero-copy">
           <span className="eyebrow">Project record</span>
           <h1>{record.project.name}</h1>
-          {record.project.description ? (
-            <p className="hero-lead">{record.project.description}</p>
-          ) : null}
+          {description ? <p className="hero-lead">{description}</p> : null}
           <p className="page-intro-body">{record.factualSummary}</p>
           <div className="hero-meta">
             <span className="hero-meta-item">Neutral public record</span>

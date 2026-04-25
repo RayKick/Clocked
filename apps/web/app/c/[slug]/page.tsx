@@ -13,6 +13,7 @@ import {
   formatShortDate
 } from "../../../lib/format";
 import { getClaimBySlug } from "../../../lib/data";
+import { formatReceiptId } from "../../../lib/receipts";
 
 export const dynamic = "force-dynamic";
 
@@ -39,9 +40,10 @@ export default async function ClaimPage({
 
   const publicUrl = `${getAppBaseUrl()}/c/${claim.publicSlug}`;
   const latestStatusEvent = claim.statusEvents.at(-1);
-  const receiptId = claim.id.startsWith("demo-claim-001")
-    ? "REC-2026-000124"
-    : `REC-${claim.id.slice(-6).toUpperCase()}`;
+  const receiptId = formatReceiptId(claim.id);
+  const sourceUrl = claim.sourcePost.url;
+  const sourceCapturedAt = claim.sourcePost.capturedAt;
+  const sourceHash = claim.sourcePost.contentHash.slice(0, 12);
 
   return (
     <PageShell>
@@ -81,7 +83,7 @@ export default async function ClaimPage({
             <div>
               <span>Source</span>
               <strong>{formatRecordLabel(claim.sourcePost.platform)}</strong>
-              <small>Captured {formatShortDate(claim.sourcePost.postedAt)}</small>
+              <small>Captured {formatShortDate(sourceCapturedAt)}</small>
             </div>
           </div>
           <div className="hero-receipt-footer">
@@ -92,6 +94,37 @@ export default async function ClaimPage({
         </div>
 
         <aside className="receipt-sidebar">
+          <div className="surface-card">
+            <span className="card-kicker">Source proof</span>
+            <div className="source-proof">
+              <div>
+                <span>Source type</span>
+                <strong>{formatRecordLabel(claim.sourcePost.platform)}</strong>
+              </div>
+              <div>
+                <span>Source captured at</span>
+                <strong>{formatDisplayDate(sourceCapturedAt)}</strong>
+              </div>
+              <div>
+                <span>Captured snapshot</span>
+                <strong>{sourceHash}</strong>
+              </div>
+              <div>
+                <span>Reviewer note</span>
+                <strong>Source, deadline, and delivery criteria were reviewed before publication.</strong>
+              </div>
+            </div>
+            {sourceUrl ? (
+              <a
+                href={sourceUrl}
+                className="button secondary source-proof-action"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open original source ↗
+              </a>
+            ) : null}
+          </div>
           <div className="surface-card">
             <span className="card-kicker">Receipt URL</span>
             <a href={publicUrl} className="metadata-value">

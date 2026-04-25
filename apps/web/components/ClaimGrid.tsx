@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ClaimCard } from "@clocked/ui";
 import type { ProjectRecordClaim } from "@clocked/core";
 
+import { formatReceiptId } from "../lib/receipts";
+
 export function ClaimGrid(props: {
   claims: ProjectRecordClaim[];
   emptyTitle?: string;
@@ -34,7 +36,7 @@ export function ClaimGrid(props: {
             sourceQuote={claim.sourceQuote}
             evidenceRequired={claim.deliverable}
             sourceLabel={claim.sourcePost.platform}
-            receiptId={`REC-${claim.id.slice(-6).toUpperCase()}`}
+            receiptId={formatReceiptId(claim.id)}
             projectName={claim.project?.name}
             actorHandle={claim.actor?.handle}
             deadlineText={claim.deadlineText}

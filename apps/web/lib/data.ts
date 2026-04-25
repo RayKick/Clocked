@@ -33,6 +33,29 @@ type ClaimWithInclude = Prisma.ClaimGetPayload<{
   include: typeof claimInclude;
 }>;
 
+function withExampleClaims(
+  claims: ProjectRecordClaim[],
+  filters: {
+    status?: string;
+    projectSlug?: string;
+    actorHandle?: string;
+    query?: string;
+    limit?: number;
+  }
+) {
+  const limit = filters.limit ?? 50;
+  const existingSlugs = new Set(claims.map((claim) => claim.publicSlug));
+  const examples = getDemoClaims({ ...filters, limit }).filter(
+    (claim) => !existingSlugs.has(claim.publicSlug)
+  );
+
+  if (!filters.projectSlug && !filters.actorHandle && !filters.query) {
+    return [...examples, ...claims].slice(0, limit);
+  }
+
+  return [...claims, ...examples].slice(0, limit);
+}
+
 function mapClaim(claim: NonNullable<ClaimWithInclude>): ProjectRecordClaim {
   return {
     id: claim.id,
@@ -130,7 +153,7 @@ export async function getClaims(filters: {
       take: filters.limit ?? 50
     });
 
-    return claims.map(mapClaim);
+    return withExampleClaims(claims.map(mapClaim), filters);
   } catch {
     return getDemoClaims(filters);
   }
@@ -171,7 +194,10 @@ export async function getProjectRecordBySlug(projectSlug: string) {
     return getDemoProjectRecordBySlug(projectSlug);
   }
 
-  const claims = project.claims.map(mapClaim);
+  const claims = withExampleClaims(project.claims.map(mapClaim), {
+    projectSlug,
+    limit: 200
+  });
   const counts = countClaimsByStatus(claims);
   const latestStatusChanges = claims
     .flatMap((claim) => claim.statusEvents)
@@ -225,7 +251,10 @@ export async function getActorRecordByHandle(
     return getDemoActorRecordByHandle(platform, handle);
   }
 
-  const claims = actor.claims.map(mapClaim);
+  const claims = withExampleClaims(actor.claims.map(mapClaim), {
+    actorHandle: handle,
+    limit: 200
+  });
   const counts = countClaimsByStatus(claims);
   return {
     actor,
@@ -246,7 +275,7 @@ export async function getDueBuckets() {
     getClaims({ status: "OPEN", limit: 200 }),
     getClaims({ limit: 200 })
   ]);
-  if (allClaims.length > 0 && allClaims.every((claim) => claim.id.startsWith("demo-"))) {
+  if (allClaims.length > 0 && allClaims.every((claim) => claim.id.startsWith("sample-"))) {
     return getDemoDueBuckets();
   }
   const now = new Date();

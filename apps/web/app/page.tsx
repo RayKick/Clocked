@@ -23,6 +23,9 @@ const trustSignals = [
   "Machine-readable"
 ];
 
+const clockClaimUrl =
+  "https://x.com/intent/tweet?text=%40ClockedBot%20clock%20this%20%5Bpaste%20public%20source%20link%5D";
+
 const useCases = [
   {
     title: "Communities",
@@ -174,7 +177,11 @@ export default async function HomePage({
   const activeTab = tabs.find((tab) => tab.status === status) ?? tabs[0]!;
   const activeLabel =
     activeTab.label === "Due Soon" ? "Due soon" : getPublicStatusLabel(status as never);
-  const featuredClaims = claims.slice(0, 3);
+  const launchClaims = [
+    ...claims.filter((claim) => claim.id.startsWith("sample-")),
+    ...claims.filter((claim) => !claim.id.startsWith("sample-"))
+  ];
+  const featuredClaims = launchClaims.slice(0, 3);
   const dueSoonCount = allClaims.filter(
     (claim) =>
       claim.status === "OPEN" &&
@@ -195,10 +202,10 @@ export default async function HomePage({
           <p className="hero-lead">
             Tag @ClockedBot under a public promise. CLOCKED extracts the claim,
             locks the source and deadline, drafts delivery criteria, and publishes a
-            neutral public receipt after review.
+            reviewed public receipt.
           </p>
           <div className="hero-actions">
-            <a href="#clock-this" className="button">
+            <a href={clockClaimUrl} className="button" target="_blank" rel="noreferrer">
               Clock a claim →
             </a>
             <a href="#live-receipts" className="button secondary">
@@ -280,7 +287,7 @@ export default async function HomePage({
       <SectionShell
         id="live-receipts"
         title="Live receipts"
-        body="See what teams promised, when they promised it, and what actually happened."
+        body="See what teams promised, when they promised it, and what actually happened. Every receipt keeps the source, deadline, evidence, and status history attached."
         actions={
           <div className="segmented" aria-label="Receipt filters">
             {tabs.map((tab) => (
@@ -301,6 +308,26 @@ export default async function HomePage({
           </div>
         }
       >
+        <form className="ledger-toolbar" action="/" aria-label="Search live receipts">
+          <input type="hidden" name="status" value={status} />
+          <label>
+            <span>Search receipts</span>
+            <input
+              type="text"
+              name="q"
+              defaultValue={query}
+              placeholder="Search project, founder, ticker, source..."
+            />
+          </label>
+          <button className="button secondary" type="submit">
+            Search
+          </button>
+          {query ? (
+            <Link href={`/?status=${status}`} className="text-link">
+              Clear
+            </Link>
+          ) : null}
+        </form>
         <ClaimGrid claims={featuredClaims} emptyTitle={`No ${activeLabel} receipts yet.`} />
       </SectionShell>
 
@@ -350,8 +377,8 @@ GET /api/hud/project/atlas-labs
           <p>Turn public crypto claims into permanent, source-linked receipts.</p>
         </div>
         <div className="hero-actions">
-          <a href="#clock-this" className="button">
-            Start clocking →
+          <a href={clockClaimUrl} className="button" target="_blank" rel="noreferrer">
+            Clock a claim →
           </a>
           <Link href="/methodology" className="button secondary">
             Read methodology →
