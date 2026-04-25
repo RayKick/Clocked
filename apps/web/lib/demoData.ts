@@ -22,7 +22,7 @@ const demoProject = {
   slug: "atlas-labs",
   name: "Atlas Labs",
   description:
-    "A demo project record showing how CLOCKED preserves time-bounded crypto promises with source, deadline, evidence, and review context.",
+    "An example project record showing how CLOCKED preserves time-bounded crypto promises with source, deadline, evidence, and review context.",
   website: "https://example.com",
   officialXHandle: "atlaslabs",
   officialTelegram: null,
@@ -89,8 +89,7 @@ function demoClaim(input: {
     ambiguityNotesJson: [],
     relatedClaimIdsJson: [],
     heyAnonContextJson: {
-      mode: "demo",
-      note: "Demo record used when the production database is not configured."
+      note: "Example receipt shown for product preview."
     },
     createdAt,
     updatedAt: now,
@@ -322,7 +321,7 @@ export function getDemoDueBuckets() {
     overdue: openClaims.filter((claim) => claim.deadlineAt && claim.deadlineAt < now),
     recentlyDelivered: allClaims.filter((claim) => claim.status === "DELIVERED").slice(0, 6),
     recentlyReframed: allClaims.filter((claim) => claim.status === "REFRAMED").slice(0, 6),
-    digest: `Demo record: ${openClaims.filter(
+    digest: `Example receipts: ${openClaims.filter(
       (claim) =>
         claim.deadlineAt &&
         claim.deadlineAt >= now &&

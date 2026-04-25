@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { getPublicStatusLabel, getStatusBodyCopy } from "@clocked/core";
-import { JsonBlock, SectionShell, StatusBadge } from "@clocked/ui";
+import { SectionShell, StatusBadge } from "@clocked/ui";
 import { notFound } from "next/navigation";
 
 import { PageShell } from "../../../components/PageShell";
@@ -39,177 +39,157 @@ export default async function ClaimPage({
 
   const publicUrl = `${getAppBaseUrl()}/c/${claim.publicSlug}`;
   const latestStatusEvent = claim.statusEvents.at(-1);
+  const receiptId = claim.id.startsWith("demo-claim-001")
+    ? "REC-2026-000124"
+    : `REC-${claim.id.slice(-6).toUpperCase()}`;
 
   return (
     <PageShell>
-      <section className="hero hero--split reveal">
-        <div className="hero-copy receipt-header">
+      <section className="receipt-detail-hero reveal">
+        <div className="public-receipt public-receipt--large">
+          <div className="hero-receipt-head">
+            <div className="project-lockup">
+              <span className="project-mark">
+                {(claim.project?.name ?? "C").slice(0, 1)}
+              </span>
+              <div>
+                <strong>{claim.project?.name ?? "Unassigned project"}</strong>
+                <small>{claim.actor ? `@${claim.actor.handle}` : "Public source"}</small>
+              </div>
+            </div>
+            <StatusBadge status={claim.status} />
+          </div>
           <span className="eyebrow">Public receipt</span>
-          <StatusBadge status={claim.status} />
           <h1>{claim.normalizedClaim}</h1>
-          <p className="hero-lead">{getStatusBodyCopy(claim.status)}</p>
-          <div className="hero-meta">
-            <span className="hero-meta-item">
-              {claim.project?.name ?? "Unassigned project"}
-            </span>
-            <span className="hero-meta-item">
-              {claim.actor ? `@${claim.actor.handle}` : "Unknown source"}
-            </span>
-            <span className="hero-meta-item">{formatRecordLabel(claim.sourcePost.platform)}</span>
+          <p>{getStatusBodyCopy(claim.status)}</p>
+          <div className="hero-receipt-rows">
+            <div>
+              <span>Source quote</span>
+              <strong>“{claim.sourceQuote}”</strong>
+            </div>
+            <div>
+              <span>Deadline</span>
+              <strong>{claim.deadlineText ?? "Deadline preserved"}</strong>
+              <small>
+                {formatRelativeDateLabel(claim.deadlineAt)} · {formatDateOnly(claim.deadlineAt)}
+              </small>
+            </div>
+            <div>
+              <span>Evidence required</span>
+              <strong>{claim.deliverable}</strong>
+            </div>
+            <div>
+              <span>Source</span>
+              <strong>{formatRecordLabel(claim.sourcePost.platform)}</strong>
+              <small>Captured {formatShortDate(claim.sourcePost.postedAt)}</small>
+            </div>
+          </div>
+          <div className="hero-receipt-footer">
+            <span>Receipt ID</span>
+            <strong>{receiptId}</strong>
+            <a href={publicUrl}>Share ↗</a>
           </div>
         </div>
-        <aside className="hero-side receipt-aside">
-          <div className="summary-block">
-            <span className="card-kicker">Deadline</span>
-            <h2 className="card-title">{claim.deadlineText ?? "No deadline text recorded"}</h2>
-            <p className="card-body">
-              {formatRelativeDateLabel(claim.deadlineAt)}. Recorded for{" "}
-              {formatDisplayDate(claim.deadlineAt)}.
-            </p>
+
+        <aside className="receipt-sidebar">
+          <div className="surface-card">
+            <span className="card-kicker">Receipt URL</span>
+            <a href={publicUrl} className="metadata-value">
+              {publicUrl}
+            </a>
           </div>
-          <div className="summary-block summary-block--quote">
-            <span className="card-kicker">Source</span>
-            <div className="quote-block">“{claim.sourceQuote}”</div>
-            <p className="card-body">Posted {formatShortDate(claim.sourcePost.postedAt)}</p>
-            {claim.sourcePost.url ? <a href={claim.sourcePost.url}>Open original post</a> : null}
+          <div className="surface-card">
+            <span className="card-kicker">Project</span>
+            {claim.project ? (
+              <Link href={`/p/${claim.project.slug}`} className="metadata-value">
+                {claim.project.name}
+              </Link>
+            ) : (
+              <span className="metadata-value">Unassigned</span>
+            )}
+          </div>
+          <div className="surface-card">
+            <span className="card-kicker">Correction or dispute</span>
+            <p className="card-body">
+              If the source, deadline, or outcome is wrong, submit a correction with
+              public evidence. Corrections are reviewed and logged.
+            </p>
+            <Link href="/methodology#disputes" className="text-link">
+              Read dispute process →
+            </Link>
           </div>
         </aside>
       </section>
+
       <div className="detail-grid">
-        <div style={{ display: "grid", gap: "1rem", alignContent: "start" }}>
-          <SectionShell
-            title="Evidence trail"
-            body="Public evidence preserved against the original claim."
-          >
-            {claim.evidence.length > 0 ? (
-              <ul className="timeline">
-                {claim.evidence.map((evidence) => (
-                  <li key={evidence.id}>
-                    <span className="timeline-title">{formatRecordLabel(evidence.evidenceType)}</span>
-                    <span className="muted-copy">{evidence.summary}</span>
-                    <span className="timeline-meta">
-                      {evidence.occurredAt
-                        ? formatDisplayDate(evidence.occurredAt)
-                        : "No occurrence time recorded"}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="empty-state">
-                <strong className="empty-state-title">No public evidence attached yet.</strong>
-                <p className="empty-state-body">
-                  Evidence will appear here after review if public material is added to the
-                  claim record.
-                </p>
-              </div>
-            )}
-          </SectionShell>
-          <SectionShell
-            title="Status history"
-            body="Statuses describe the public record only."
-          >
+        <SectionShell
+          title="Status history"
+          body="Status labels describe the public record only."
+        >
+          <ul className="timeline">
+            {claim.statusEvents.map((event) => (
+              <li key={event.id}>
+                <span className="timeline-title">{getPublicStatusLabel(event.toStatus)}</span>
+                <span className="muted-copy">{event.reason}</span>
+                <span className="timeline-meta">{formatDisplayDate(event.createdAt)}</span>
+              </li>
+            ))}
+          </ul>
+        </SectionShell>
+
+        <SectionShell
+          title="Evidence trail"
+          body="Public evidence preserved against the original claim."
+        >
+          {claim.evidence.length > 0 ? (
             <ul className="timeline">
-              {claim.statusEvents.map((event) => (
-                <li key={event.id}>
-                  <span className="timeline-title">{getPublicStatusLabel(event.toStatus)}</span>
-                  <span className="muted-copy">{event.reason}</span>
-                  <span className="timeline-meta">{formatDisplayDate(event.createdAt)}</span>
+              {claim.evidence.map((evidence) => (
+                <li key={evidence.id}>
+                  <span className="timeline-title">{formatRecordLabel(evidence.evidenceType)}</span>
+                  <span className="muted-copy">{evidence.summary}</span>
+                  <span className="timeline-meta">
+                    {evidence.occurredAt
+                      ? formatDisplayDate(evidence.occurredAt)
+                      : "No occurrence time recorded"}
+                  </span>
                 </li>
               ))}
             </ul>
-          </SectionShell>
-        </div>
-        <div style={{ display: "grid", gap: "1rem", alignContent: "start" }}>
-          <div className="surface-card surface-card--muted">
-            <span className="card-kicker">Receipt details</span>
-            <div className="metadata-list">
-              <div className="metadata-item">
-                <span className="metadata-label">Project</span>
-                <span className="metadata-value">
-                  {claim.project ? (
-                    <Link href={`/p/${claim.project.slug}`}>{claim.project.name}</Link>
-                  ) : (
-                    "Unassigned"
-                  )}
-                </span>
-              </div>
-              <div className="metadata-item">
-                <span className="metadata-label">Source</span>
-                <span className="metadata-value">
-                  {claim.actor ? (
-                    <Link
-                      href={`/a/${claim.actor.platform.toLowerCase()}/${claim.actor.handle}`}
-                    >
-                      @{claim.actor.handle}
-                    </Link>
-                  ) : (
-                    "Unknown"
-                  )}
-                </span>
-              </div>
-              <div className="metadata-item">
-                <span className="metadata-label">Deadline</span>
-                <span className="metadata-value">
-                  {claim.deadlineText} · {formatDateOnly(claim.deadlineAt)}
-                </span>
-              </div>
-              <div className="metadata-item">
-                <span className="metadata-label">Receipt URL</span>
-                <span className="metadata-value">
-                  <a href={publicUrl}>{publicUrl}</a>
-                </span>
-              </div>
-              <div className="metadata-item">
-                <span className="metadata-label">Public JSON</span>
-                <span className="metadata-value">
-                  <a href={`/api/public/claims?query=${claim.publicSlug}`}>Search result</a>
-                </span>
-              </div>
+          ) : (
+            <div className="empty-state">
+              <strong className="empty-state-title">No public evidence attached yet.</strong>
+              <p className="empty-state-body">
+                Evidence will appear here after review if public material is added to the
+                receipt.
+              </p>
             </div>
-          </div>
-          <div className="surface-card surface-card--plain">
-            <span className="card-kicker">Assessment</span>
-            {latestStatusEvent?.reason ? (
-              <p className="card-body">{latestStatusEvent.reason}</p>
-            ) : null}
-            <div className="metadata-list">
-              <div className="metadata-item">
-                <span className="metadata-label">Delivery criteria</span>
-                <ul className="simple-list">
-                  {claim.deliveryCriteriaJson.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="metadata-item">
-                <span className="metadata-label">Non-delivery criteria</span>
-                <ul className="simple-list">
-                  {claim.nonDeliveryCriteriaJson.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-              {claim.ambiguityNotesJson.length > 0 ? (
-                <div className="metadata-item">
-                  <span className="metadata-label">Classification notes</span>
-                  <ul className="simple-list">
-                    {claim.ambiguityNotesJson.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </div>
-          </div>
-          <details className="details-reset">
-            <summary>Technical context</summary>
-            <JsonBlock
-              value={claim.heyAnonContextJson ?? { note: "No HeyAnon context recorded." }}
-            />
-          </details>
-        </div>
+          )}
+        </SectionShell>
       </div>
+
+      <SectionShell
+        title="Assessment criteria"
+        body={latestStatusEvent?.reason ?? "Criteria are reviewed before a public status change."}
+      >
+        <div className="content-grid content-grid--balanced">
+          <div className="surface-card">
+            <span className="card-kicker">Delivery criteria</span>
+            <ul className="simple-list">
+              {claim.deliveryCriteriaJson.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="surface-card">
+            <span className="card-kicker">Non-delivery criteria</span>
+            <ul className="simple-list">
+              {claim.nonDeliveryCriteriaJson.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </SectionShell>
     </PageShell>
   );
 }

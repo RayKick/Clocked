@@ -13,7 +13,7 @@ export function PageShell(props: { children: ReactNode }) {
               </span>
               <span className="wordmark-copy">
                 <span>CLOCKED</span>
-                <span className="wordmark-caption">Public receipts for crypto promises</span>
+                <span className="wordmark-caption">Public memory for crypto promises</span>
               </span>
             </Link>
             <nav className="site-nav" aria-label="Primary">
@@ -21,15 +21,15 @@ export function PageShell(props: { children: ReactNode }) {
                 Receipts
               </Link>
               <Link href="/due" className="site-nav-link">
-                Due soon
+                Due Soon
               </Link>
-              <Link href="/delivered" className="site-nav-link">
-                Delivered
+              <Link href="/methodology" className="site-nav-link">
+                Methodology
               </Link>
-              <Link href="/slipped" className="site-nav-link">
-                Slipped
+              <Link href="/p/atlas-labs" className="site-nav-link">
+                Projects
               </Link>
-              <a href="/api/hud/project/example-protocol" className="site-nav-link">
+              <a href="/api/hud/project/atlas-labs" className="site-nav-link">
                 API
               </a>
             </nav>
@@ -42,11 +42,11 @@ export function PageShell(props: { children: ReactNode }) {
             records. Review happens before anything becomes public.
           </p>
           <div className="site-footer-links">
-            <Link href="/">Home</Link>
-            <Link href="/due">Due</Link>
-            <Link href="/admin">Admin</Link>
-            <Link href="/admin/review">Review queue</Link>
-            <a href="/api/hud/project/example-protocol">HUD example</a>
+            <Link href="/">Receipts</Link>
+            <Link href="/due">Due Soon</Link>
+            <Link href="/methodology">Methodology</Link>
+            <a href="/api/hud/project/atlas-labs">API</a>
+            <a href="https://x.com/ClockedBot">X</a>
           </div>
         </footer>
       </div>

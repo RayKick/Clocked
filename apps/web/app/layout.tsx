@@ -12,7 +12,7 @@ const sans = Manrope({
 export const metadata: Metadata = {
   title: "CLOCKED",
   description:
-    "Public receipts for crypto promises, with review, deadlines, evidence, and agent-friendly records."
+    "Public memory for crypto promises, with review, deadlines, evidence, and agent-friendly records."
 };
 
 export default function RootLayout(props: { children: React.ReactNode }) {

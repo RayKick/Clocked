@@ -31,6 +31,10 @@ export function ClaimGrid(props: {
             slug={claim.publicSlug}
             status={claim.status}
             normalizedClaim={claim.normalizedClaim}
+            sourceQuote={claim.sourceQuote}
+            evidenceRequired={claim.deliverable}
+            sourceLabel={claim.sourcePost.platform}
+            receiptId={`REC-${claim.id.slice(-6).toUpperCase()}`}
             projectName={claim.project?.name}
             actorHandle={claim.actor?.handle}
             deadlineText={claim.deadlineText}

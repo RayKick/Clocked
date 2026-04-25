@@ -6,6 +6,12 @@ import { PageShell } from "../../components/PageShell";
 import { getAdminSummary } from "../../lib/data";
 
 export const dynamic = "force-dynamic";
+export const metadata = {
+  robots: {
+    index: false,
+    follow: false
+  }
+};
 
 export default async function AdminPage() {
   const summary = await getAdminSummary();

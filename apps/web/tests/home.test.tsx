@@ -18,12 +18,13 @@ describe("home page", () => {
       await HomePage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Public receipts for crypto promises.");
+    expect(html).toContain("When crypto says");
     expect(html).toContain(
-      "Capture the claim, preserve the source, attach the deadline, and publish"
+      "Tag @ClockedBot under a public promise"
     );
     expect(html).toContain("REC-2026-000124");
-    expect(html).toContain("From public claim to durable receipt");
-    expect(html).toContain("MCP and HUD are first-class surfaces");
+    expect(html).toContain("How CLOCKED works");
+    expect(html).toContain("Built for agents");
+    expect(html).toContain("CLOCKED is not a dunk bot");
   });
 });

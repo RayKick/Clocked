@@ -143,7 +143,7 @@ export async function getClaimBySlug(slug: string) {
       include: claimInclude
     });
 
-    return claim ? mapClaim(claim) : null;
+    return claim ? mapClaim(claim) : getDemoClaimBySlug(slug);
   } catch {
     return getDemoClaimBySlug(slug);
   }
@@ -168,7 +168,7 @@ export async function getProjectRecordBySlug(projectSlug: string) {
   }
 
   if (!project) {
-    return null;
+    return getDemoProjectRecordBySlug(projectSlug);
   }
 
   const claims = project.claims.map(mapClaim);
@@ -222,7 +222,7 @@ export async function getActorRecordByHandle(
   }
 
   if (!actor) {
-    return null;
+    return getDemoActorRecordByHandle(platform, handle);
   }
 
   const claims = actor.claims.map(mapClaim);

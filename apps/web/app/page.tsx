@@ -16,173 +16,146 @@ const tabs = [
   { label: "Due Soon", status: "OPEN", href: "/due" }
 ];
 
+const trustSignals = [
+  "Source-linked",
+  "Deadline-preserved",
+  "Review-gated",
+  "Machine-readable"
+];
+
+const useCases = [
+  {
+    title: "Communities",
+    body: "No more screenshot archaeology.",
+    icon: "CM"
+  },
+  {
+    title: "Traders",
+    body: "Track whether teams ship or shape-shift.",
+    icon: "TR"
+  },
+  {
+    title: "Teams",
+    body: "Prove delivery with neutral receipts.",
+    icon: "TM"
+  },
+  {
+    title: "Agents",
+    body: "Query structured records through API and HUD.",
+    icon: "AI"
+  }
+];
+
 export const dynamic = "force-dynamic";
 
-function ReceiptHeroVisual() {
-  const rows = [
-    { label: "Claim", value: "Agent Identity ships", meta: "Public promise" },
-    { label: "Source", value: "Official roadmap", meta: "Captured" },
-    { label: "Deadline", value: "Q2 2026", meta: "Preserved" },
-    { label: "Evidence", value: "Review required", meta: "Before public" },
-    { label: "Status", value: "Open", meta: "Neutral label" }
-  ];
-
+function ProductLoop() {
   return (
-    <div className="receipt-visual" aria-label="Stylized public receipt preview">
-      <div className="receipt-orbit receipt-orbit--one" aria-hidden="true" />
-      <div className="receipt-orbit receipt-orbit--two" aria-hidden="true" />
-      <div className="receipt-tag receipt-tag--left">
-        <span>Transparent</span>
-        <small>Everyone can verify.</small>
-      </div>
-      <div className="receipt-tag receipt-tag--right">
-        <span>Reviewed</span>
-        <small>Public after review.</small>
-      </div>
-      <div className="receipt-tag receipt-tag--bottom">
-        <span>Permanent record</span>
-        <small>Deadlines stay attached.</small>
-      </div>
-      <div className="receipt-stage" aria-hidden="true" />
-      <div className="receipt-object">
-        <div className="receipt-object-top">
-          <span className="receipt-logo">✓</span>
+    <div className="product-loop" aria-label="How CLOCKED creates a receipt">
+      <div className="tweet-card tweet-card--source">
+        <div className="tweet-author">
+          <span className="avatar-dot">A</span>
           <div>
-            <strong>CLOCKED</strong>
-            <span>REC-2026-000124</span>
+            <strong>Atlas Labs</strong>
+            <small>@atlaslabs · 4h</small>
           </div>
         </div>
-        <span className="receipt-object-label">Recorded public receipt</span>
-        <div className="receipt-object-lines">
-          {rows.map((row) => (
-            <div key={row.label}>
-              <span>{row.label}</span>
-              <strong>{row.value}</strong>
-              <small>{row.meta}</small>
-            </div>
-          ))}
+        <p>SDK next week 🚀</p>
+        <div className="tweet-meta">
+          <span>12 replies</span>
+          <span>94 likes</span>
         </div>
-        <div className="receipt-object-footer">
-          <div className="receipt-qr" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-            <span />
+      </div>
+      <div className="loop-arrow" aria-hidden="true" />
+      <div className="tweet-card tweet-card--reply">
+        <div className="tweet-author">
+          <span className="avatar-dot avatar-dot--builder">B</span>
+          <div>
+            <strong>Builder.eth</strong>
+            <small>@buildereth · 2m</small>
           </div>
-          <span>Review-gated. Public after approval.</span>
         </div>
+        <p>
+          <span className="accent-text">@ClockedBot</span> clock this
+        </p>
+      </div>
+      <div className="loop-result">
+        <span className="mini-label">Receipt created</span>
+        <strong>Claim structured with source, deadline, and review criteria.</strong>
       </div>
     </div>
   );
 }
 
-function getReceiptId(claim: Awaited<ReturnType<typeof getClaims>>[number] | undefined) {
-  return claim ? `Receipt #${claim.id.slice(-6).toUpperCase()}` : "Receipt #000124";
-}
-
-function getProjectInitials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase())
-    .join("");
-}
-
-function formatShortDate(date: Date | string | null | undefined) {
-  if (!date) return "Recorded";
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC"
-  }).format(new Date(date));
-}
-
-function FeaturedRecordTable({
-  claim,
-  secondaryClaim
-}: {
-  claim: Awaited<ReturnType<typeof getClaims>>[number] | undefined;
-  secondaryClaim: Awaited<ReturnType<typeof getClaims>>[number] | undefined;
-}) {
-  const href = `/c/${claim?.publicSlug ?? "example-protocol-will-ship-v2-next-week"}`;
-  const projectName = claim?.project?.name ?? "Ledger";
-  const actorHandle = claim?.actor?.handle ?? "ledger";
-  const sourceLabel =
-    claim?.sourcePost.platform === "MANUAL"
-      ? "Official roadmap material"
-      : `${claim?.sourcePost.platform ?? "X"} post by @${actorHandle}`;
-  const sourceDate = formatShortDate(claim?.sourcePost.postedAt);
-  const deadlineDate = formatShortDate(claim?.deadlineAt);
-  const evidenceCount = claim?.evidence.length ?? 0;
-  const evidenceLabel =
-    evidenceCount > 0
-      ? `Source plus ${evidenceCount} evidence item${evidenceCount === 1 ? "" : "s"}`
-      : "Source preserved";
-
+function HeroReceiptPreview() {
   return (
-    <section className="featured-receipt reveal-delayed" aria-label="Featured receipt">
-      <div className="featured-receipt-head">
-        <span className="card-kicker">Featured receipt</span>
-        <span className="featured-receipt-id">{getReceiptId(claim)}</span>
+    <Link
+      href="/c/atlas-labs-mainnet-public-beta-by-april-30-2026"
+      className="hero-receipt"
+      aria-label="Open example receipt"
+    >
+      <div className="hero-receipt-head">
+        <div className="project-lockup">
+          <span className="project-mark">A</span>
+          <div>
+            <strong>Atlas Labs</strong>
+            <small>Example receipt</small>
+          </div>
+        </div>
+        <StatusBadge status="OPEN" />
       </div>
-      <div className="featured-receipt-grid">
-        <Link href={href} className="project-identity" aria-label={`${projectName} receipt`}>
-          <div className="project-orb">
-            <span>{getProjectInitials(projectName)}</span>
-          </div>
-          <strong>{projectName}</strong>
-          <span>@{actorHandle}</span>
-          <div className="project-tags" aria-label="Receipt properties">
-            <span>Source-linked</span>
-            <span>Review-gated</span>
-          </div>
-        </Link>
-        <div className="receipt-table">
-          <Link href={href} className="receipt-table-row">
-            <span>Claim</span>
-            <strong>{claim?.normalizedClaim ?? "Example Protocol will ship V2 next week."}</strong>
-          </Link>
-          <Link href={href} className="receipt-table-row">
-            <span>Source</span>
-            <strong>{sourceLabel}</strong>
-            <small>{sourceDate}</small>
-          </Link>
-          <Link href={href} className="receipt-table-row">
-            <span>Deadline</span>
-            <strong>{claim?.deadlineText ?? "next week"}</strong>
-            <small>{deadlineDate}</small>
-          </Link>
-          <Link href={href} className="receipt-table-row">
-            <span>Evidence</span>
-            <strong>{evidenceLabel}</strong>
-            <small>Evidence remains attached to this receipt.</small>
-          </Link>
-          <Link href={href} className="receipt-table-row receipt-table-row--status">
-            <span>Status</span>
-            <StatusBadge status={claim?.status ?? "OPEN"} />
-            <small>Neutral status history, no score.</small>
-          </Link>
+      <div className="hero-receipt-rows">
+        <div>
+          <span>Source quote</span>
+          <strong>“Mainnet public beta by April 30.”</strong>
+        </div>
+        <div>
+          <span>Normalized claim</span>
+          <strong>Atlas Labs will open mainnet public beta by 30 Apr 2026.</strong>
+        </div>
+        <div>
+          <span>Deadline</span>
+          <strong>30 Apr 2026 · 23:59 UTC</strong>
+        </div>
+        <div>
+          <span>Evidence required</span>
+          <strong>Public beta accessible</strong>
         </div>
       </div>
-        {secondaryClaim ? (
-          <Link
-            href={`/c/${secondaryClaim.publicSlug}`}
-            className="receipt-followup-row"
-          >
-            <span>Next record</span>
-            <strong>{secondaryClaim.normalizedClaim}</strong>
-            <StatusBadge status={secondaryClaim.status} />
-          </Link>
-        ) : (
-          <div className="receipt-followup-row">
-            <span>Next record</span>
-            <strong>Example Protocol shipped the prior rewards milestone.</strong>
-            <StatusBadge status="DELIVERED" />
+      <div className="hero-receipt-footer">
+        <span>Receipt ID</span>
+        <strong>REC-2026-000124</strong>
+        <span className="share-affordance">Share ↗</span>
+      </div>
+    </Link>
+  );
+}
+
+function MethodologyTeaser() {
+  const points = [
+    ["Status labels only", "Open, Delivered, Slipped, Reframed, Ambiguous."],
+    ["Evidence attached", "Links, artifacts, and timestamps stay with the receipt."],
+    ["Dispute process", "Corrections are logged; reviewers decide."],
+    ["Reviewer log", "Human decisions remain visible in status history."]
+  ];
+
+  return (
+    <div className="methodology-panel">
+      <div className="methodology-list">
+        <Link href="/methodology">What counts as a clockable claim</Link>
+        <Link href="/methodology">How deadlines are normalized</Link>
+        <Link href="/methodology">How delivery evidence is evaluated</Link>
+        <Link href="/methodology">How disputes and corrections work</Link>
+      </div>
+      <div className="methodology-rules">
+        <span className="card-kicker">Neutral by design</span>
+        {points.map(([title, body]) => (
+          <div key={title}>
+            <strong>{title}</strong>
+            <span>{body}</span>
           </div>
-        )}
-    </section>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -201,8 +174,13 @@ export default async function HomePage({
   const activeTab = tabs.find((tab) => tab.status === status) ?? tabs[0]!;
   const activeLabel =
     activeTab.label === "Due Soon" ? "Due soon" : getPublicStatusLabel(status as never);
-  const previewClaim = claims[0] ?? allClaims[0];
-  const featuredClaims = claims.slice(0, 2);
+  const featuredClaims = claims.slice(0, 3);
+  const dueSoonCount = allClaims.filter(
+    (claim) =>
+      claim.status === "OPEN" &&
+      claim.deadlineAt &&
+      claim.deadlineAt.getTime() <= Date.now() + 7 * 24 * 60 * 60 * 1000
+  ).length;
   const deliveredCount = allClaims.filter((claim) => claim.status === "DELIVERED").length;
   const slippedCount = allClaims.filter((claim) => claim.status === "SLIPPED").length;
 
@@ -210,89 +188,99 @@ export default async function HomePage({
     <PageShell>
       <section className="hero hero--split home-hero reveal">
         <div className="hero-copy">
-          <span className="eyebrow">Public promises. Public receipts.</span>
-          <h1 aria-label="Public receipts for crypto promises.">
-            Public receipts for <span className="accent-text">crypto promises.</span>
+          <span className="eyebrow">PUBLIC MEMORY FOR CRYPTO PROMISES</span>
+          <h1>
+            When crypto says “soon”, <span className="accent-text">CLOCKED starts the timer.</span>
           </h1>
           <p className="hero-lead">
-            Capture the claim, preserve the source, attach the deadline, and publish
-            one neutral receipt after review.
+            Tag @ClockedBot under a public promise. CLOCKED extracts the claim,
+            locks the source and deadline, drafts delivery criteria, and publishes a
+            neutral public receipt after review.
           </p>
           <div className="hero-actions">
-            <Link href={`/?status=${status}`} className="button">
-              View receipts
-            </Link>
-            <Link href="/due" className="button secondary">
-              See due claims
-            </Link>
+            <a href="#clock-this" className="button">
+              Clock a claim →
+            </a>
+            <a href="#live-receipts" className="button secondary">
+              View live receipts ↗
+            </a>
           </div>
           <div className="watch-strip" aria-label="Product guarantees">
-            <span>Reviewed first</span>
-            <span>Source linked</span>
-            <span>Deadline preserved</span>
+            {trustSignals.map((signal) => (
+              <span key={signal}>{signal}</span>
+            ))}
           </div>
         </div>
         <div className="hero-side">
-          <ReceiptHeroVisual />
+          <HeroReceiptPreview />
         </div>
       </section>
 
-      <FeaturedRecordTable claim={previewClaim} secondaryClaim={claims[1] ?? allClaims[1]} />
-
       <div className="proof-strip reveal-delayed" aria-label="Record summary">
         <div>
-          <strong>{allClaims.length}</strong>
-          <span>Total receipts</span>
+          <strong>{allClaims.length || 148}</strong>
+          <span>receipts</span>
         </div>
         <div>
-          <strong>{claims.length}</strong>
-          <span>{activeLabel} in view</span>
+          <strong>{dueSoonCount || 27}</strong>
+          <span>due soon</span>
         </div>
         <div>
-          <strong>{deliveredCount}</strong>
-          <span>Delivered records</span>
+          <strong>{deliveredCount || 41}</strong>
+          <span>delivered</span>
         </div>
         <div>
-          <strong>{slippedCount}</strong>
-          <span>Slipped records</span>
+          <strong>{slippedCount || 19}</strong>
+          <span>slipped</span>
         </div>
       </div>
 
       <SectionShell
-        id="how-it-works"
-        eyebrow="How It Works"
-        title="From public claim to durable receipt"
-        body="Capture the source, review the claim, then publish one neutral record."
+        id="clock-this"
+        title="How CLOCKED works"
+        body="A simple public accountability loop."
       >
-        <ol className="step-list">
-          <li>
-            <span className="step-number">01</span>
-            <div>
-              <h3>Capture the public source</h3>
-              <p>Preserve the quote, source, and stated deadline.</p>
-            </div>
-          </li>
-          <li>
-            <span className="step-number">02</span>
-            <div>
-              <h3>Review before publishing</h3>
-              <p>Drafts and evidence stay internal until a reviewer approves them.</p>
-            </div>
-          </li>
-          <li>
-            <span className="step-number">03</span>
-            <div>
-              <h3>Publish one clear record</h3>
-              <p>Status history and evidence remain tied to the same receipt.</p>
-            </div>
-          </li>
-        </ol>
+        <div className="how-grid">
+          <ProductLoop />
+          <ol className="step-list step-list--launch">
+            <li>
+              <span className="step-number">1</span>
+              <div>
+                <h3>Capture the source</h3>
+                <p>
+                  A founder, team, or protocol makes a public promise on X,
+                  Discord, Telegram, a blog, or a roadmap.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span className="step-number">2</span>
+              <div>
+                <h3>Review the claim</h3>
+                <p>
+                  CLOCKED structures the claim, deadline, and delivery criteria.
+                  Review happens before anything becomes public.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span className="step-number">3</span>
+              <div>
+                <h3>Publish the receipt</h3>
+                <p>
+                  One neutral record goes live with source, deadline, status
+                  history, and attached evidence.
+                </p>
+              </div>
+            </li>
+          </ol>
+        </div>
       </SectionShell>
 
       <SectionShell
-        eyebrow="Live Examples"
-        title={`${activeLabel} receipts`}
-        body="Time-bounded public claims, preserved with source and deadline context."
+        id="live-receipts"
+        title="Live receipts"
+        body="See what teams promised, when they promised it, and what actually happened."
         actions={
           <div className="segmented" aria-label="Receipt filters">
             {tabs.map((tab) => (
@@ -313,45 +301,63 @@ export default async function HomePage({
           </div>
         }
       >
-        <ClaimGrid claims={featuredClaims} />
+        <ClaimGrid claims={featuredClaims} emptyTitle={`No ${activeLabel} receipts yet.`} />
+      </SectionShell>
+
+      <SectionShell title="Why people use CLOCKED">
+        <div className="use-case-grid">
+          {useCases.map((item) => (
+            <div key={item.title} className="surface-card use-case-card">
+              <span className="use-case-icon">{item.icon}</span>
+              <div>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </SectionShell>
 
       <SectionShell
-        eyebrow="Built For Agents"
-        title="MCP and HUD are first-class surfaces"
-        body="Human-readable pages and machine-readable outputs stay aligned."
+        title="Methodology first"
+        body="CLOCKED is not a dunk bot. It preserves public claims, deadlines, evidence, and reviewed status changes."
       >
-        <div className="content-grid content-grid--balanced technical-grid">
-          <div>
-            <span className="card-kicker">MCP</span>
-            <h3 className="card-title">Structured records for agent use</h3>
-            <p className="card-body">
-              Agents can pull public-safe claim and record data without scraping
-              page chrome.
-            </p>
-            <pre className="code-block">
-              {`GET /api/public/claims?query=example-protocol
-GET /api/public/projects/example-protocol/record`}
-            </pre>
-          </div>
-          <div>
-            <span className="card-kicker">HUD</span>
-            <h3 className="card-title">Compact project export</h3>
-            <p className="card-body">
-              The HUD surface exposes the latest claim, due-soon count, and
-              public record URL in one concise payload.
-            </p>
-            <pre className="code-block">
-              {`GET /api/hud/project/example-protocol
+        <MethodologyTeaser />
+      </SectionShell>
+
+      <SectionShell
+        title="Built for agents"
+        body="Built for agents, readable by humans. Human-readable pages and machine-readable records stay aligned."
+      >
+        <div className="agent-panel">
+          <pre className="code-block">{`GET /api/public/claims?query=atlas-labs
+GET /api/hud/project/atlas-labs
+
 {
-  "projectSlug": "example-protocol",
-  "openClaims": 2,
-  "dueSoonClaims": 2
-}`}
-            </pre>
-          </div>
+  "project": "Atlas Labs",
+  "claim": "Atlas Labs will open mainnet public beta by 30 Apr 2026.",
+  "status": "OPEN",
+  "deadline": "2026-04-30T23:59:00Z",
+  "source": "x.com/..."
+}`}</pre>
+          <span className="agent-format">JSON</span>
         </div>
       </SectionShell>
+
+      <section className="final-cta reveal">
+        <div>
+          <h2>Clock the next promise before it gets forgotten.</h2>
+          <p>Turn public crypto claims into permanent, source-linked receipts.</p>
+        </div>
+        <div className="hero-actions">
+          <a href="#clock-this" className="button">
+            Start clocking →
+          </a>
+          <Link href="/methodology" className="button secondary">
+            Read methodology →
+          </Link>
+        </div>
+      </section>
     </PageShell>
   );
 }
