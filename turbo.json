@@ -7,6 +7,20 @@
     },
     "build": {
       "dependsOn": ["^build"],
+      "env": [
+        "AI_MODE",
+        "ENABLE_DEMO_FALLBACK",
+        "SHOW_SAMPLE_RECORDS",
+        "SAFE_DRY_RUN",
+        "X_READ_ENABLED",
+        "X_POSTING_ENABLED",
+        "HEYANON_ENABLE_LIVE_CALLS",
+        "ALLOW_ADMIN_QUERY_PASSWORD",
+        "APP_BASE_URL",
+        "VERCEL_PROJECT_PRODUCTION_URL",
+        "VERCEL_URL",
+        "VERCEL_ENV"
+      ],
       "outputs": ["dist/**", ".next/**"]
     },
     "lint": {
@@ -21,4 +35,3 @@
     }
   }
 }
-
