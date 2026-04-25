@@ -3,9 +3,24 @@ import Link from "next/link";
 import { ClaimCard } from "@clocked/ui";
 import type { ProjectRecordClaim } from "@clocked/core";
 
-export function ClaimGrid({ claims }: { claims: ProjectRecordClaim[] }) {
+export function ClaimGrid(props: {
+  claims: ProjectRecordClaim[];
+  emptyTitle?: string;
+  emptyBody?: string;
+}) {
+  const {
+    claims,
+    emptyTitle = "Nothing public in this section yet.",
+    emptyBody = "New reviewed claims will appear here once they are ready for the public record."
+  } = props;
+
   if (claims.length === 0) {
-    return <div className="panel">No public claims in this section yet.</div>;
+    return (
+      <div className="empty-state">
+        <strong className="empty-state-title">{emptyTitle}</strong>
+        <p className="empty-state-body">{emptyBody}</p>
+      </div>
+    );
   }
 
   return (

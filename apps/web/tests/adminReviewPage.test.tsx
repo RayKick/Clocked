@@ -18,7 +18,7 @@ describe("admin review page", () => {
       await AdminReviewPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Dry-run mode: approvals create local records only.");
-    expect(html).toContain("Approval does not post externally.");
+    expect(html).toContain("Dry-run mode stays on");
+    expect(html).toContain("Nothing here posts externally.");
   });
 });

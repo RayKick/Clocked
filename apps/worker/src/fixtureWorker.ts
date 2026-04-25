@@ -24,6 +24,206 @@ const LEGACY_FIXTURE_NORMALIZED_CLAIMS = [
 
 type FixtureReviewPayload = Record<string, unknown>;
 
+type MarketDemoReceipt = {
+  projectSlug: string;
+  projectName: string;
+  projectDescription: string;
+  website: string;
+  actorHandle: string;
+  actorDisplayName: string;
+  sourcePlatformPostId: string;
+  sourceUrl: string;
+  sourcePostedAt: string;
+  sourceText: string;
+  normalizedClaim: string;
+  sourceQuote: string;
+  deliverable: string;
+  deadlineText: string;
+  deadlineAt: string;
+  deadlineConfidence: number;
+  extractionConfidence: number;
+  status: "OPEN" | "DELIVERED" | "SLIPPED" | "REFRAMED" | "SUPERSEDED" | "AMBIGUOUS";
+  deliveryCriteria: string[];
+  nonDeliveryCriteria: string[];
+  ambiguityNotes?: string[];
+  evidence?: {
+    sourcePlatformPostId: string;
+    sourceUrl: string;
+    sourcePostedAt: string;
+    sourceText: string;
+    summary: string;
+    confidence: number;
+  };
+};
+
+const MARKET_DEMO_RECEIPTS: MarketDemoReceipt[] = [
+  {
+    projectSlug: "the-graph",
+    projectName: "The Graph",
+    projectDescription:
+      "The Graph is an indexing and data protocol used by crypto applications and agents.",
+    website: "https://thegraph.com",
+    actorHandle: "graphprotocol",
+    actorDisplayName: "The Graph",
+    sourcePlatformPostId: "manual-the-graph-roadmap-2026-x402",
+    sourceUrl: "https://thegraph.com/blog/technical-roadmap/",
+    sourcePostedAt: "2026-02-20T12:00:00.000Z",
+    sourceText:
+      "The Graph 2026 roadmap lists an x402-compliant Subgraph gateway with MCP and A2A support for Q2 2026.",
+    normalizedClaim:
+      "The Graph will ship an x402-compliant Subgraph gateway with MCP and A2A support in Q2 2026.",
+    sourceQuote:
+      "Q2 2026 roadmap item: x402-compliant Subgraph gateway with MCP and A2A support.",
+    deliverable: "x402-compliant Subgraph gateway with MCP and A2A support",
+    deadlineText: "Q2 2026",
+    deadlineAt: "2026-06-30T23:59:59.000Z",
+    deadlineConfidence: 0.84,
+    extractionConfidence: 0.88,
+    status: "OPEN",
+    deliveryCriteria: [
+      "A public Subgraph gateway update is available or announced.",
+      "The update explicitly supports x402, MCP, and A2A."
+    ],
+    nonDeliveryCriteria: [
+      "A roadmap mention without a shipped gateway.",
+      "Support for only one of x402, MCP, or A2A."
+    ]
+  },
+  {
+    projectSlug: "the-graph",
+    projectName: "The Graph",
+    projectDescription:
+      "The Graph is an indexing and data protocol used by crypto applications and agents.",
+    website: "https://thegraph.com",
+    actorHandle: "graphprotocol",
+    actorDisplayName: "The Graph",
+    sourcePlatformPostId: "manual-the-graph-roadmap-2026-tycho",
+    sourceUrl: "https://thegraph.com/blog/technical-roadmap/",
+    sourcePostedAt: "2026-02-20T12:00:00.000Z",
+    sourceText:
+      "The Graph 2026 roadmap lists a public beta of Tycho protocol integrations for Q2 2026.",
+    normalizedClaim:
+      "The Graph will release a public beta of Tycho protocol integrations in Q2 2026.",
+    sourceQuote: "Q2 2026 roadmap item: public beta of Tycho protocol integrations.",
+    deliverable: "Public beta of Tycho protocol integrations",
+    deadlineText: "Q2 2026",
+    deadlineAt: "2026-06-30T23:59:59.000Z",
+    deadlineConfidence: 0.84,
+    extractionConfidence: 0.86,
+    status: "OPEN",
+    deliveryCriteria: [
+      "A public Tycho integration beta is announced or accessible.",
+      "The beta is attributable to The Graph."
+    ],
+    nonDeliveryCriteria: [
+      "Private testing only.",
+      "A roadmap update without a public beta."
+    ]
+  },
+  {
+    projectSlug: "ledger",
+    projectName: "Ledger",
+    projectDescription:
+      "Ledger builds crypto security hardware, software, and transaction-signing infrastructure.",
+    website: "https://www.ledger.com",
+    actorHandle: "ledger",
+    actorDisplayName: "Ledger",
+    sourcePlatformPostId: "manual-ledger-ai-roadmap-2026-q2",
+    sourceUrl: "https://www.ledger.com/blog-2026-ai-security-roadmap",
+    sourcePostedAt: "2026-04-14T12:00:00.000Z",
+    sourceText:
+      "Ledger's 2026 AI Security Roadmap lists Agent Identity and Agent Skills & CLI for Q2 2026.",
+    normalizedClaim:
+      "Ledger will ship Agent Identity and Agent Skills & CLI in Q2 2026.",
+    sourceQuote: "Q2 2026 roadmap item: Agent Identity and Agent Skills & CLI.",
+    deliverable: "Agent Identity and Agent Skills & CLI",
+    deadlineText: "Q2 2026",
+    deadlineAt: "2026-06-30T23:59:59.000Z",
+    deadlineConfidence: 0.84,
+    extractionConfidence: 0.9,
+    status: "OPEN",
+    deliveryCriteria: [
+      "Ledger publishes Agent Identity materials or product access.",
+      "Ledger publishes Agent Skills & CLI materials or product access."
+    ],
+    nonDeliveryCriteria: [
+      "A future roadmap mention without a shipped or accessible deliverable.",
+      "Only one of the two listed Q2 items is available."
+    ]
+  },
+  {
+    projectSlug: "ledger",
+    projectName: "Ledger",
+    projectDescription:
+      "Ledger builds crypto security hardware, software, and transaction-signing infrastructure.",
+    website: "https://www.ledger.com",
+    actorHandle: "ledger",
+    actorDisplayName: "Ledger",
+    sourcePlatformPostId: "manual-ledger-ai-roadmap-2026-q3",
+    sourceUrl: "https://www.ledger.com/blog-2026-ai-security-roadmap",
+    sourcePostedAt: "2026-04-14T12:00:00.000Z",
+    sourceText:
+      "Ledger's 2026 AI Security Roadmap lists Agent Chat marketplace and Agent Intents & Policies for Q3 2026.",
+    normalizedClaim:
+      "Ledger will ship Agent Chat marketplace and Agent Intents & Policies in Q3 2026.",
+    sourceQuote: "Q3 2026 roadmap item: Agent Chat marketplace and Agent Intents & Policies.",
+    deliverable: "Agent Chat marketplace and Agent Intents & Policies",
+    deadlineText: "Q3 2026",
+    deadlineAt: "2026-09-30T23:59:59.000Z",
+    deadlineConfidence: 0.84,
+    extractionConfidence: 0.88,
+    status: "OPEN",
+    deliveryCriteria: [
+      "Ledger publishes or opens access to Agent Chat marketplace.",
+      "Ledger publishes or opens access to Agent Intents & Policies."
+    ],
+    nonDeliveryCriteria: [
+      "A teaser or roadmap refresh without public access.",
+      "Only one of the two listed Q3 items is available."
+    ]
+  },
+  {
+    projectSlug: "midnight",
+    projectName: "Midnight",
+    projectDescription:
+      "Midnight is a data-protection blockchain focused on privacy-preserving applications.",
+    website: "https://midnight.network",
+    actorHandle: "midnightntwrk",
+    actorDisplayName: "Midnight",
+    sourcePlatformPostId: "manual-midnight-mainnet-late-march",
+    sourceUrl: "https://midnight.network/blog/",
+    sourcePostedAt: "2026-02-26T12:00:00.000Z",
+    sourceText:
+      "Midnight public materials referenced mainnet launch timing for late March 2026.",
+    normalizedClaim: "Midnight will launch mainnet by late March 2026.",
+    sourceQuote: "Mainnet launch timing: late March 2026.",
+    deliverable: "Mainnet launch",
+    deadlineText: "late March 2026",
+    deadlineAt: "2026-03-31T23:59:59.000Z",
+    deadlineConfidence: 0.78,
+    extractionConfidence: 0.82,
+    status: "DELIVERED",
+    deliveryCriteria: [
+      "Midnight announces that mainnet is live.",
+      "The announcement is attributable to Midnight or its official materials."
+    ],
+    nonDeliveryCriteria: [
+      "Testnet or developer preview only.",
+      "A launch window update without mainnet availability."
+    ],
+    evidence: {
+      sourcePlatformPostId: "manual-midnight-mainnet-delivered",
+      sourceUrl: "https://midnight.network/blog/",
+      sourcePostedAt: "2026-03-31T12:00:00.000Z",
+      sourceText:
+        "Midnight published public materials indicating mainnet availability in the late-March window.",
+      summary:
+        "Official Midnight materials indicated mainnet availability within the recorded late-March window.",
+      confidence: 0.82
+    }
+  }
+];
+
 function toJsonValue(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value ?? null)) as Prisma.InputJsonValue;
 }
@@ -287,6 +487,7 @@ async function ensureProjectAndActors() {
 }
 
 async function upsertSourcePost(input: {
+  platform?: "X" | "MANUAL";
   platformPostId: string;
   authorId: string;
   handle: string;
@@ -296,10 +497,11 @@ async function upsertSourcePost(input: {
   parentPlatformPostId?: string;
 }) {
   const url = input.url ?? `https://x.com/${input.handle}/status/${input.platformPostId}`;
+  const platform = input.platform ?? "X";
   return prisma.sourcePost.upsert({
     where: {
       platform_platformPostId: {
-        platform: "X",
+        platform,
         platformPostId: input.platformPostId
       }
     },
@@ -312,11 +514,12 @@ async function upsertSourcePost(input: {
       parentPlatformPostId: input.parentPlatformPostId ?? null,
       rawJson: {
         fixture: true,
+        platform,
         platformPostId: input.platformPostId,
         text: input.text
       },
       contentHash: computeSourcePostContentHash({
-        platform: "X",
+        platform,
         platformPostId: input.platformPostId,
         url,
         authorHandle: input.handle,
@@ -326,7 +529,7 @@ async function upsertSourcePost(input: {
       sourceConfidence: 0.97
     },
     create: {
-      platform: "X",
+      platform,
       platformPostId: input.platformPostId,
       url,
       authorId: input.authorId,
@@ -336,11 +539,12 @@ async function upsertSourcePost(input: {
       parentPlatformPostId: input.parentPlatformPostId ?? null,
       rawJson: {
         fixture: true,
+        platform,
         platformPostId: input.platformPostId,
         text: input.text
       },
       contentHash: computeSourcePostContentHash({
-        platform: "X",
+        platform,
         platformPostId: input.platformPostId,
         url,
         authorHandle: input.handle,
@@ -614,6 +818,169 @@ async function ensureClaim(input: EnsureClaimInput) {
   });
 }
 
+async function ensureMarketDemoReceipts() {
+  const createdClaims: string[] = [];
+
+  for (const receipt of MARKET_DEMO_RECEIPTS) {
+    const project = await prisma.project.upsert({
+      where: { slug: receipt.projectSlug },
+      update: {
+        name: receipt.projectName,
+        description: receipt.projectDescription,
+        website: receipt.website,
+        officialXHandle: receipt.actorHandle
+      },
+      create: {
+        slug: receipt.projectSlug,
+        name: receipt.projectName,
+        description: receipt.projectDescription,
+        website: receipt.website,
+        officialXHandle: receipt.actorHandle
+      }
+    });
+
+    const actor = await prisma.actor.upsert({
+      where: {
+        platform_handle: {
+          platform: "X",
+          handle: receipt.actorHandle
+        }
+      },
+      update: {
+        displayName: receipt.actorDisplayName,
+        actorType: "OFFICIAL_PROJECT",
+        verifiedSource: true,
+        projectId: project.id
+      },
+      create: {
+        platform: "X",
+        handle: receipt.actorHandle,
+        displayName: receipt.actorDisplayName,
+        actorType: "OFFICIAL_PROJECT",
+        verifiedSource: true,
+        projectId: project.id
+      }
+    });
+
+    const sourcePost = await upsertSourcePost({
+      platform: "MANUAL",
+      platformPostId: receipt.sourcePlatformPostId,
+      authorId: actor.id,
+      handle: actor.handle,
+      text: receipt.sourceText,
+      postedAt: receipt.sourcePostedAt,
+      url: receipt.sourceUrl
+    });
+
+    const publicSlug = createClaimSlug(receipt.projectName, receipt.normalizedClaim);
+    const canonicalHash = computeClaimCanonicalHash({
+      actorId: actor.id,
+      projectId: project.id,
+      normalizedClaim: receipt.normalizedClaim,
+      deliverable: receipt.deliverable,
+      deadlineText: receipt.deadlineText,
+      deadlineAt: receipt.deadlineAt,
+      sourcePostId: sourcePost.id
+    });
+
+    const claim = await ensureClaim({
+      publicSlug,
+      projectId: project.id,
+      actorId: actor.id,
+      sourcePostId: sourcePost.id,
+      canonicalHash,
+      status: receipt.status,
+      normalizedClaim: receipt.normalizedClaim,
+      sourceQuote: receipt.sourceQuote,
+      deliverable: receipt.deliverable,
+      deadlineText: receipt.deadlineText,
+      deadlineAt: receipt.deadlineAt,
+      deadlineTimezone: "UTC",
+      deadlineConfidence: receipt.deadlineConfidence,
+      extractionConfidence: receipt.extractionConfidence,
+      deliveryCriteriaJson: receipt.deliveryCriteria,
+      nonDeliveryCriteriaJson: receipt.nonDeliveryCriteria,
+      ambiguityNotesJson: receipt.ambiguityNotes ?? [],
+      relatedClaimIdsJson: [],
+      heyAnonContextJson: {
+        mocked: true,
+        source: "marketDemoFixture",
+        sourceUrl: receipt.sourceUrl
+      }
+    });
+
+    await ensureStatusEvent({
+      claimId: claim.id,
+      toStatus: "OPEN",
+      reason: "Market demo receipt captured from public roadmap material.",
+      actorType: "ADMIN",
+      evidenceJson: {
+        sourceUrl: receipt.sourceUrl
+      }
+    });
+
+    if (receipt.status !== "OPEN") {
+      await ensureStatusEvent({
+        claimId: claim.id,
+        fromStatus: "OPEN",
+        toStatus: receipt.status,
+        reason: `Market demo receipt marked ${receipt.status.toLowerCase()} from public follow-up material.`,
+        actorType: "ADMIN",
+        evidenceJson: {
+          sourceUrl: receipt.evidence?.sourceUrl ?? receipt.sourceUrl
+        }
+      });
+    }
+
+    await ensureEvidence({
+      claimId: claim.id,
+      sourcePostId: sourcePost.id,
+      evidenceType: "SOURCE",
+      url: receipt.sourceUrl,
+      summary: "Source roadmap material captured for the demo receipt.",
+      occurredAt: receipt.sourcePostedAt,
+      confidence: receipt.extractionConfidence,
+      rawJson: {
+        fixture: true,
+        source: "marketDemoFixture",
+        sourceUrl: receipt.sourceUrl
+      }
+    });
+
+    if (receipt.evidence) {
+      const evidenceSource = await upsertSourcePost({
+        platform: "MANUAL",
+        platformPostId: receipt.evidence.sourcePlatformPostId,
+        authorId: actor.id,
+        handle: actor.handle,
+        text: receipt.evidence.sourceText,
+        postedAt: receipt.evidence.sourcePostedAt,
+        url: receipt.evidence.sourceUrl,
+        parentPlatformPostId: receipt.sourcePlatformPostId
+      });
+
+      await ensureEvidence({
+        claimId: claim.id,
+        sourcePostId: evidenceSource.id,
+        evidenceType: "DELIVERY_PROOF",
+        url: receipt.evidence.sourceUrl,
+        summary: receipt.evidence.summary,
+        occurredAt: receipt.evidence.sourcePostedAt,
+        confidence: receipt.evidence.confidence,
+        rawJson: {
+          fixture: true,
+          source: "marketDemoFixture",
+          sourceUrl: receipt.evidence.sourceUrl
+        }
+      });
+    }
+
+    createdClaims.push(claim.publicSlug);
+  }
+
+  return createdClaims;
+}
+
 export async function runFixtureWorker() {
   assertDatabaseConfigured();
   await cleanupLegacyFixtures();
@@ -874,6 +1241,8 @@ export async function runFixtureWorker() {
     }
   });
 
+  const marketDemoClaimSlugs = await ensureMarketDemoReceipts();
+
   return {
     ok: true,
     projectSlug: createProjectSlug(PROJECT_NAME),
@@ -889,6 +1258,7 @@ export async function runFixtureWorker() {
       ambiguous: FIXTURE_IDS.ambiguousReason,
       statusChange: FIXTURE_IDS.reframeReason,
       heyanonEvidence: FIXTURE_IDS.heyanonReason
-    }
+    },
+    marketDemoClaimSlugs
   };
 }

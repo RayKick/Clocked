@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "NEXT_DIST_DIR=.next-dev node ./scripts/with-root-env.mjs corepack pnpm exec next dev",
-    "build": "node ./scripts/with-root-env.mjs corepack pnpm exec next build",
+    "build": "corepack pnpm --filter @clocked/db run generate && node ./scripts/with-root-env.mjs corepack pnpm exec next build",
     "start": "node ./scripts/with-root-env.mjs corepack pnpm exec next start",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit --incremental false",

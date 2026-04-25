@@ -1,3 +1,4 @@
+import React from "react";
 import type { ClaimStatus } from "@clocked/core";
 import { getPublicStatusLabel } from "@clocked/core";
 
@@ -13,22 +14,13 @@ const colorMap: Record<ClaimStatus, string> = {
 export function StatusBadge({ status }: { status: ClaimStatus }) {
   return (
     <span
+      className="status-badge"
+      data-status={status}
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "0.35rem",
-        borderRadius: 999,
-        padding: "0.35rem 0.7rem",
-        background: colorMap[status],
-        color: "#101215",
-        fontSize: "0.8rem",
-        fontWeight: 700,
-        letterSpacing: "0.04em",
-        textTransform: "uppercase"
+        background: colorMap[status]
       }}
     >
       {getPublicStatusLabel(status)}
     </span>
   );
 }
-

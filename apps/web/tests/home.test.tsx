@@ -20,9 +20,10 @@ describe("home page", () => {
 
     expect(html).toContain("Public receipts for crypto promises.");
     expect(html).toContain(
-      "CLOCKED turns time-bounded public promises into trackable claims with deadlines, evidence, and status history."
+      "Capture the claim, preserve the source, attach the deadline, and publish"
     );
-    expect(html).toContain("Built as a public memory layer for humans on X and agents through MCP.");
-    expect(html).toContain("View Example Protocol record");
+    expect(html).toContain("REC-2026-000124");
+    expect(html).toContain("From public claim to durable receipt");
+    expect(html).toContain("MCP and HUD are first-class surfaces");
   });
 });

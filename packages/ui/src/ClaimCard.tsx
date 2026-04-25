@@ -15,48 +15,36 @@ export interface ClaimCardProps {
 }
 
 export function ClaimCard(props: ClaimCardProps) {
+  const metadata = [props.projectName, props.actorHandle ? `@${props.actorHandle}` : null]
+    .filter((value): value is string => Boolean(value))
+    .join(" · ");
+
   return (
-    <article
-      style={{
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: 20,
-        padding: "1.1rem",
-        background:
-          "linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
-        boxShadow: "0 16px 40px rgba(0,0,0,0.15)"
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: "1rem",
-          marginBottom: "0.9rem"
-        }}
-      >
+    <article className="surface-card surface-card--interactive claim-card">
+      <div className="claim-card-header">
         <StatusBadge status={props.status} />
-        <span style={{ opacity: 0.7, fontSize: "0.85rem" }}>
-          /c/{props.slug}
-        </span>
-      </div>
-      <h3 style={{ margin: 0, fontSize: "1.1rem", lineHeight: 1.35 }}>
-        {props.normalizedClaim}
-      </h3>
-      <p style={{ margin: "0.6rem 0", opacity: 0.8 }}>
-        {getNeutralReceiptSubline(props.status)}
-      </p>
-      <div style={{ display: "grid", gap: "0.25rem", fontSize: "0.92rem" }}>
-        {props.projectName ? <span>Project: {props.projectName}</span> : null}
-        {props.actorHandle ? <span>Source: @{props.actorHandle}</span> : null}
         {props.deadlineText ? (
-          <span>
-            Deadline: {props.deadlineText}
-            {props.deadlineAt ? ` (${new Date(props.deadlineAt).toUTCString()})` : ""}
+          <span className="mini-label">Deadline {props.deadlineText}</span>
+        ) : (
+          <span className="mini-label">Receipt</span>
+        )}
+      </div>
+      <h3 className="claim-card-title">{props.normalizedClaim}</h3>
+      <p className="claim-card-subline">{getNeutralReceiptSubline(props.status)}</p>
+      <div className="claim-card-footer">
+        {metadata ? <span className="metadata-value">{metadata}</span> : <span />}
+        {props.deadlineAt ? (
+          <span className="claim-card-date">
+            {new Date(props.deadlineAt).toLocaleString("en-US", {
+              dateStyle: "medium",
+              timeStyle: "short",
+              timeZone: "UTC"
+            })}
           </span>
-        ) : null}
+        ) : (
+          <span className="claim-card-date">/c/{props.slug}</span>
+        )}
       </div>
     </article>
   );
 }
-

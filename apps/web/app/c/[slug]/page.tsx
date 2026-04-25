@@ -1,12 +1,29 @@
+import React from "react";
+import Link from "next/link";
+import { getPublicStatusLabel, getStatusBodyCopy } from "@clocked/core";
 import { JsonBlock, SectionShell, StatusBadge } from "@clocked/ui";
 import { notFound } from "next/navigation";
 
 import { PageShell } from "../../../components/PageShell";
 import { getAppBaseUrl } from "../../../lib/env";
-import { formatDisplayDate } from "../../../lib/format";
+import {
+  formatDateOnly,
+  formatDisplayDate,
+  formatRelativeDateLabel,
+  formatShortDate
+} from "../../../lib/format";
 import { getClaimBySlug } from "../../../lib/data";
 
 export const dynamic = "force-dynamic";
+
+function formatRecordLabel(value: string | null | undefined) {
+  if (!value) return "Not recorded";
+
+  return value
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
 
 export default async function ClaimPage({
   params
@@ -21,105 +38,177 @@ export default async function ClaimPage({
   }
 
   const publicUrl = `${getAppBaseUrl()}/c/${claim.publicSlug}`;
+  const latestStatusEvent = claim.statusEvents.at(-1);
 
   return (
     <PageShell>
-      <section className="hero">
-        <StatusBadge status={claim.status} />
-        <h1>{claim.normalizedClaim}</h1>
-        <p>
-          {claim.project?.name ?? "Unassigned project"} ·{" "}
-          {claim.actor ? `@${claim.actor.handle}` : "Unknown source"} ·{" "}
-          {claim.sourcePost.platform}
-        </p>
-        <p>{claim.sourceQuote}</p>
-        <p>
-          This receipt records a public, time-bounded claim and its evidence trail.
-          It does not infer intent.
-        </p>
+      <section className="hero hero--split reveal">
+        <div className="hero-copy receipt-header">
+          <span className="eyebrow">Public receipt</span>
+          <StatusBadge status={claim.status} />
+          <h1>{claim.normalizedClaim}</h1>
+          <p className="hero-lead">{getStatusBodyCopy(claim.status)}</p>
+          <div className="hero-meta">
+            <span className="hero-meta-item">
+              {claim.project?.name ?? "Unassigned project"}
+            </span>
+            <span className="hero-meta-item">
+              {claim.actor ? `@${claim.actor.handle}` : "Unknown source"}
+            </span>
+            <span className="hero-meta-item">{formatRecordLabel(claim.sourcePost.platform)}</span>
+          </div>
+        </div>
+        <aside className="hero-side receipt-aside">
+          <div className="summary-block">
+            <span className="card-kicker">Deadline</span>
+            <h2 className="card-title">{claim.deadlineText ?? "No deadline text recorded"}</h2>
+            <p className="card-body">
+              {formatRelativeDateLabel(claim.deadlineAt)}. Recorded for{" "}
+              {formatDisplayDate(claim.deadlineAt)}.
+            </p>
+          </div>
+          <div className="summary-block summary-block--quote">
+            <span className="card-kicker">Source</span>
+            <div className="quote-block">“{claim.sourceQuote}”</div>
+            <p className="card-body">Posted {formatShortDate(claim.sourcePost.postedAt)}</p>
+            {claim.sourcePost.url ? <a href={claim.sourcePost.url}>Open original post</a> : null}
+          </div>
+        </aside>
       </section>
       <div className="detail-grid">
-        <SectionShell
-          title="Receipt"
-          body="Public source, deadline logic, and evaluation criteria are preserved here so later evidence can be reviewed against the original claim."
-        >
-          <div className="panel">
-            <ul className="simple-list">
-              <li>Project: {claim.project?.name ?? "Unassigned"}</li>
-              <li>Source: {claim.actor ? `@${claim.actor.handle}` : "Unknown"}</li>
-              <li>Source platform: {claim.sourcePost.platform}</li>
-              <li>Deadline text: {claim.deadlineText}</li>
-              <li>Deadline at: {formatDisplayDate(claim.deadlineAt)}</li>
-              <li>
-                Public receipt URL: <a href={publicUrl}>{publicUrl}</a>
-              </li>
-              <li>
-                Source link:{" "}
-                {claim.sourcePost.url ? (
-                  <a href={claim.sourcePost.url}>Original post</a>
-                ) : (
-                  "Unavailable"
-                )}
-              </li>
-              <li>
-                Public JSON:{" "}
-                <a href={`/api/public/claims?query=${claim.publicSlug}`}>Search result</a>
-              </li>
-            </ul>
-          </div>
-          <div className="panel">
-            <h3>Delivery criteria</h3>
-            <ul className="simple-list">
-              {claim.deliveryCriteriaJson.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-            <h3>Non-delivery criteria</h3>
-            <ul className="simple-list">
-              {claim.nonDeliveryCriteriaJson.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-            {claim.ambiguityNotesJson.length > 0 ? (
-              <>
-                <h3>Ambiguity notes</h3>
-                <ul className="simple-list">
-                  {claim.ambiguityNotesJson.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </>
-            ) : null}
-          </div>
-        </SectionShell>
-        <SectionShell
-          title="Evidence and status history"
-          body="Statuses describe the public record only: Open, Delivered, Slipped, Reframed, Superseded, or Ambiguous."
-        >
-          <div className="panel">
-            <h3>Evidence timeline</h3>
-            <ul className="timeline">
-              {claim.evidence.map((evidence) => (
-                <li key={evidence.id}>
-                  <strong>{evidence.evidenceType}</strong>: {evidence.summary}
-                  {evidence.occurredAt ? ` (${formatDisplayDate(evidence.occurredAt)})` : ""}
-                </li>
-              ))}
-            </ul>
-            {claim.evidence.length === 0 ? <p>No public evidence has been attached yet.</p> : null}
-          </div>
-          <div className="panel">
-            <h3>Status history</h3>
+        <div style={{ display: "grid", gap: "1rem", alignContent: "start" }}>
+          <SectionShell
+            title="Evidence trail"
+            body="Public evidence preserved against the original claim."
+          >
+            {claim.evidence.length > 0 ? (
+              <ul className="timeline">
+                {claim.evidence.map((evidence) => (
+                  <li key={evidence.id}>
+                    <span className="timeline-title">{formatRecordLabel(evidence.evidenceType)}</span>
+                    <span className="muted-copy">{evidence.summary}</span>
+                    <span className="timeline-meta">
+                      {evidence.occurredAt
+                        ? formatDisplayDate(evidence.occurredAt)
+                        : "No occurrence time recorded"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="empty-state">
+                <strong className="empty-state-title">No public evidence attached yet.</strong>
+                <p className="empty-state-body">
+                  Evidence will appear here after review if public material is added to the
+                  claim record.
+                </p>
+              </div>
+            )}
+          </SectionShell>
+          <SectionShell
+            title="Status history"
+            body="Statuses describe the public record only."
+          >
             <ul className="timeline">
               {claim.statusEvents.map((event) => (
                 <li key={event.id}>
-                  <strong>{event.toStatus}</strong>: {event.reason} ({formatDisplayDate(event.createdAt)})
+                  <span className="timeline-title">{getPublicStatusLabel(event.toStatus)}</span>
+                  <span className="muted-copy">{event.reason}</span>
+                  <span className="timeline-meta">{formatDisplayDate(event.createdAt)}</span>
                 </li>
               ))}
             </ul>
+          </SectionShell>
+        </div>
+        <div style={{ display: "grid", gap: "1rem", alignContent: "start" }}>
+          <div className="surface-card surface-card--muted">
+            <span className="card-kicker">Receipt details</span>
+            <div className="metadata-list">
+              <div className="metadata-item">
+                <span className="metadata-label">Project</span>
+                <span className="metadata-value">
+                  {claim.project ? (
+                    <Link href={`/p/${claim.project.slug}`}>{claim.project.name}</Link>
+                  ) : (
+                    "Unassigned"
+                  )}
+                </span>
+              </div>
+              <div className="metadata-item">
+                <span className="metadata-label">Source</span>
+                <span className="metadata-value">
+                  {claim.actor ? (
+                    <Link
+                      href={`/a/${claim.actor.platform.toLowerCase()}/${claim.actor.handle}`}
+                    >
+                      @{claim.actor.handle}
+                    </Link>
+                  ) : (
+                    "Unknown"
+                  )}
+                </span>
+              </div>
+              <div className="metadata-item">
+                <span className="metadata-label">Deadline</span>
+                <span className="metadata-value">
+                  {claim.deadlineText} · {formatDateOnly(claim.deadlineAt)}
+                </span>
+              </div>
+              <div className="metadata-item">
+                <span className="metadata-label">Receipt URL</span>
+                <span className="metadata-value">
+                  <a href={publicUrl}>{publicUrl}</a>
+                </span>
+              </div>
+              <div className="metadata-item">
+                <span className="metadata-label">Public JSON</span>
+                <span className="metadata-value">
+                  <a href={`/api/public/claims?query=${claim.publicSlug}`}>Search result</a>
+                </span>
+              </div>
+            </div>
           </div>
-          <JsonBlock value={claim.heyAnonContextJson ?? { note: "No HeyAnon context recorded." }} />
-        </SectionShell>
+          <div className="surface-card surface-card--plain">
+            <span className="card-kicker">Assessment</span>
+            {latestStatusEvent?.reason ? (
+              <p className="card-body">{latestStatusEvent.reason}</p>
+            ) : null}
+            <div className="metadata-list">
+              <div className="metadata-item">
+                <span className="metadata-label">Delivery criteria</span>
+                <ul className="simple-list">
+                  {claim.deliveryCriteriaJson.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="metadata-item">
+                <span className="metadata-label">Non-delivery criteria</span>
+                <ul className="simple-list">
+                  {claim.nonDeliveryCriteriaJson.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              {claim.ambiguityNotesJson.length > 0 ? (
+                <div className="metadata-item">
+                  <span className="metadata-label">Classification notes</span>
+                  <ul className="simple-list">
+                    {claim.ambiguityNotesJson.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          </div>
+          <details className="details-reset">
+            <summary>Technical context</summary>
+            <JsonBlock
+              value={claim.heyAnonContextJson ?? { note: "No HeyAnon context recorded." }}
+            />
+          </details>
+        </div>
       </div>
     </PageShell>
   );

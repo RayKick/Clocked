@@ -1,17 +1,24 @@
 import type { Metadata } from "next";
+import { Manrope } from "next/font/google";
 
 import "./globals.css";
+
+const sans = Manrope({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap"
+});
 
 export const metadata: Metadata = {
   title: "CLOCKED",
   description:
-    "HeyAnon-native public receipts layer for crypto promises, delivery evidence, and accountability records."
+    "Public receipts for crypto promises, with review, deadlines, evidence, and agent-friendly records."
 };
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{props.children}</body>
+      <body className={sans.variable}>{props.children}</body>
     </html>
   );
 }

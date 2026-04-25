@@ -8,7 +8,14 @@ export class AdminAuthError extends Error {
 }
 
 export function getAppBaseUrl(): string {
-  return getConfiguredAppBaseUrl(process.env);
+  const vercelBaseUrl =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
+  return getConfiguredAppBaseUrl({
+    ...process.env,
+    APP_BASE_URL:
+      process.env.APP_BASE_URL ??
+      (vercelBaseUrl ? `https://${vercelBaseUrl.replace(/^https?:\/\//, "")}` : undefined)
+  });
 }
 
 export function isSafeDryRunEnabled(): boolean {
@@ -116,7 +123,11 @@ export function getRuntimeSafetyConfig() {
     xReadEnabled: isXReadEnabled(),
     xPostingEnabled: isXPostingEnabled(),
     heyAnonLiveCallsEnabled: isHeyAnonLiveCallsEnabled(),
-    appBaseUrlConfigured: Boolean(process.env.APP_BASE_URL?.trim()),
+    appBaseUrlConfigured: Boolean(
+      process.env.APP_BASE_URL?.trim() ||
+        process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() ||
+        process.env.VERCEL_URL?.trim()
+    ),
     adminPasswordConfigured: isAdminPasswordConfigured(),
     allowAdminQueryPassword: isAdminQueryPasswordAllowed()
   };

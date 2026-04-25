@@ -10,6 +10,13 @@ import {
 } from "@clocked/core";
 import { prisma, type Prisma } from "@clocked/db";
 
+import {
+  getDemoActorRecordByHandle,
+  getDemoClaimBySlug,
+  getDemoClaims,
+  getDemoDueBuckets,
+  getDemoProjectRecordBySlug
+} from "./demoData";
 import { getAppBaseUrl } from "./env";
 
 const claimInclude = {
@@ -102,49 +109,63 @@ export async function getClaims(filters: {
   query?: string;
   limit?: number;
 }) {
-  const claims = await prisma.claim.findMany({
-    where: {
-      ...(filters.status ? { status: filters.status as never } : {}),
-      ...(filters.projectSlug ? { project: { slug: filters.projectSlug } } : {}),
-      ...(filters.actorHandle ? { actor: { handle: filters.actorHandle } } : {}),
-      ...(filters.query
-        ? {
-            OR: [
-              { normalizedClaim: { contains: filters.query, mode: "insensitive" } },
-              { project: { name: { contains: filters.query, mode: "insensitive" } } },
-              { actor: { handle: { contains: filters.query, mode: "insensitive" } } }
-            ]
-          }
-        : {})
-    },
-    include: claimInclude,
-    orderBy: { createdAt: "desc" },
-    take: filters.limit ?? 50
-  });
+  try {
+    const claims = await prisma.claim.findMany({
+      where: {
+        ...(filters.status ? { status: filters.status as never } : {}),
+        ...(filters.projectSlug ? { project: { slug: filters.projectSlug } } : {}),
+        ...(filters.actorHandle ? { actor: { handle: filters.actorHandle } } : {}),
+        ...(filters.query
+          ? {
+              OR: [
+                { normalizedClaim: { contains: filters.query, mode: "insensitive" } },
+                { project: { name: { contains: filters.query, mode: "insensitive" } } },
+                { actor: { handle: { contains: filters.query, mode: "insensitive" } } }
+              ]
+            }
+          : {})
+      },
+      include: claimInclude,
+      orderBy: { createdAt: "desc" },
+      take: filters.limit ?? 50
+    });
 
-  return claims.map(mapClaim);
+    return claims.map(mapClaim);
+  } catch {
+    return getDemoClaims(filters);
+  }
 }
 
 export async function getClaimBySlug(slug: string) {
-  const claim = await prisma.claim.findUnique({
-    where: { publicSlug: slug },
-    include: claimInclude
-  });
+  try {
+    const claim = await prisma.claim.findUnique({
+      where: { publicSlug: slug },
+      include: claimInclude
+    });
 
-  return claim ? mapClaim(claim) : null;
+    return claim ? mapClaim(claim) : null;
+  } catch {
+    return getDemoClaimBySlug(slug);
+  }
 }
 
 export async function getProjectRecordBySlug(projectSlug: string) {
-  const project = await prisma.project.findUnique({
-    where: { slug: projectSlug },
-    include: {
-      actors: true,
-      claims: {
-        include: claimInclude,
-        orderBy: { createdAt: "desc" }
+  let project;
+
+  try {
+    project = await prisma.project.findUnique({
+      where: { slug: projectSlug },
+      include: {
+        actors: true,
+        claims: {
+          include: claimInclude,
+          orderBy: { createdAt: "desc" }
+        }
       }
-    }
-  });
+    });
+  } catch {
+    return getDemoProjectRecordBySlug(projectSlug);
+  }
 
   if (!project) {
     return null;
@@ -178,21 +199,27 @@ export async function getActorRecordByHandle(
   platform: ActorPlatform,
   handle: string
 ) {
-  const actor = await prisma.actor.findUnique({
-    where: {
-      platform_handle: {
-        platform,
-        handle
+  let actor;
+
+  try {
+    actor = await prisma.actor.findUnique({
+      where: {
+        platform_handle: {
+          platform,
+          handle
+        }
+      },
+      include: {
+        project: true,
+        claims: {
+          include: claimInclude,
+          orderBy: { createdAt: "desc" }
+        }
       }
-    },
-    include: {
-      project: true,
-      claims: {
-        include: claimInclude,
-        orderBy: { createdAt: "desc" }
-      }
-    }
-  });
+    });
+  } catch {
+    return getDemoActorRecordByHandle(platform, handle);
+  }
 
   if (!actor) {
     return null;
@@ -219,6 +246,9 @@ export async function getDueBuckets() {
     getClaims({ status: "OPEN", limit: 200 }),
     getClaims({ limit: 200 })
   ]);
+  if (allClaims.length > 0 && allClaims.every((claim) => claim.id.startsWith("demo-"))) {
+    return getDemoDueBuckets();
+  }
   const now = new Date();
   const todayEnd = new Date(now);
   todayEnd.setUTCHours(23, 59, 59, 999);
@@ -246,21 +276,29 @@ export async function getDueBuckets() {
 }
 
 export async function getAdminReviewItems() {
-  return prisma.reviewItem.findMany({
-    where: { status: "PENDING" },
-    orderBy: { createdAt: "asc" }
-  });
+  try {
+    return await prisma.reviewItem.findMany({
+      where: { status: "PENDING" },
+      orderBy: { createdAt: "asc" }
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getAdminSummary() {
-  const [pendingReviews, openClaims, projects, actors] = await Promise.all([
-    prisma.reviewItem.count({ where: { status: "PENDING" } }),
-    prisma.claim.count({ where: { status: "OPEN" } }),
-    prisma.project.count(),
-    prisma.actor.count()
-  ]);
+  try {
+    const [pendingReviews, openClaims, projects, actors] = await Promise.all([
+      prisma.reviewItem.count({ where: { status: "PENDING" } }),
+      prisma.claim.count({ where: { status: "OPEN" } }),
+      prisma.project.count(),
+      prisma.actor.count()
+    ]);
 
-  return { pendingReviews, openClaims, projects, actors };
+    return { pendingReviews, openClaims, projects, actors };
+  } catch {
+    return { pendingReviews: 0, openClaims: 0, projects: 0, actors: 0 };
+  }
 }
 
 export async function getHudPayload(projectSlug: string) {

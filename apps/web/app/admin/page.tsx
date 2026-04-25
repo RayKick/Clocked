@@ -1,4 +1,6 @@
+import React from "react";
 import Link from "next/link";
+import { StatCard } from "@clocked/ui";
 
 import { PageShell } from "../../components/PageShell";
 import { getAdminSummary } from "../../lib/data";
@@ -9,24 +11,27 @@ export default async function AdminPage() {
   const summary = await getAdminSummary();
   return (
     <PageShell>
-      <section className="hero">
-        <span className="tab">Admin</span>
-        <h1>Review queue and ops console.</h1>
-        <p>Use the review queue for public claim creation, status changes, bot replies, and evidence additions.</p>
+      <section className="hero hero--compact reveal">
+        <span className="eyebrow">Admin</span>
+        <h1>Review queue and operations console.</h1>
+        <p className="hero-lead">
+          Review claim drafts, prepare ingest items, and inspect the record without
+          weakening dry-run safety.
+        </p>
+        <div className="hero-actions">
+          <Link href="/admin/review" className="button">
+            Open review queue
+          </Link>
+          <Link href="/admin/ingest" className="button secondary">
+            Open ingest console
+          </Link>
+        </div>
       </section>
-      <div className="stats">
-        <span className="stat">Pending reviews: {summary.pendingReviews}</span>
-        <span className="stat">Open claims: {summary.openClaims}</span>
-        <span className="stat">Projects: {summary.projects}</span>
-        <span className="stat">Actors: {summary.actors}</span>
-      </div>
-      <div className="stats" style={{ marginTop: "1rem" }}>
-        <Link href="/admin/review" className="button">
-          Open review queue
-        </Link>
-        <Link href="/admin/ingest" className="button secondary">
-          Read-only X ingest
-        </Link>
+      <div className="stats-grid reveal-delayed">
+        <StatCard label="Pending reviews" value={summary.pendingReviews} detail="Drafts waiting on human review." tone="accent" />
+        <StatCard label="Open claims" value={summary.openClaims} detail="Public claims still active against their recorded deadline." />
+        <StatCard label="Projects" value={summary.projects} detail="Projects currently represented in the record." />
+        <StatCard label="Actors" value={summary.actors} detail="Tracked public sources and official handles." />
       </div>
     </PageShell>
   );

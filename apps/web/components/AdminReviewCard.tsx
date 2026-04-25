@@ -12,6 +12,10 @@ function numberValue(payload: Record<string, unknown>, key: string) {
   return typeof payload[key] === "number" ? payload[key] : null;
 }
 
+function stringArrayValue(payload: Record<string, unknown>, key: string) {
+  return Array.isArray(payload[key]) ? payload[key].map(String) : [];
+}
+
 function proposedAction(kind: string, payload: Record<string, unknown>) {
   const verdict = stringValue(payload, "verdict");
   switch (kind) {
@@ -45,49 +49,118 @@ export function AdminReviewCard(props: {
 }) {
   const payload = asRecord(props.reviewItem.payloadJson);
   const verdict = stringValue(payload, "verdict");
-  const sourceQuote = stringValue(payload, "sourceQuote");
+  const sourceQuote =
+    stringValue(payload, "sourceQuote") ?? stringValue(payload, "sourceText");
   const normalizedClaim = stringValue(payload, "normalizedClaim");
   const deadlineText = stringValue(payload, "deadlineText");
+  const deadlineAt = stringValue(payload, "deadlineAt");
   const proposedStatus = stringValue(payload, "proposedStatus");
   const notClockableReason = stringValue(payload, "notClockableReason");
-  const summaryLines = [
+  const projectName = stringValue(payload, "projectName");
+  const projectSlug = stringValue(payload, "projectSlug");
+  const actorHandle = stringValue(payload, "actorHandle");
+  const sourceUrl = stringValue(payload, "sourceUrl");
+  const evidenceSummary = stringValue(payload, "summary");
+  const rationale = stringValue(payload, "rationale") ?? stringValue(payload, "reason");
+  const evidenceType = stringValue(payload, "evidenceType");
+  const deadlineConfidence = numberValue(payload, "deadlineConfidence");
+  const ambiguityNotes = stringArrayValue(payload, "ambiguityNotes");
+  const deliveryCriteria = stringArrayValue(payload, "deliveryCriteria");
+  const nonDeliveryCriteria = stringArrayValue(payload, "nonDeliveryCriteria");
+  const headerMeta = [
     verdict ? `Verdict: ${verdict}` : null,
-    sourceQuote ? `Source quote: ${sourceQuote}` : null,
-    normalizedClaim ? `Normalized claim: ${normalizedClaim}` : null,
-    deadlineText ? `Deadline: ${deadlineText}` : null,
     proposedStatus ? `Proposed status: ${proposedStatus}` : null,
-    notClockableReason ? `Reason: ${notClockableReason}` : null,
-    numberValue(payload, "deadlineConfidence") != null
-      ? `Deadline confidence: ${numberValue(payload, "deadlineConfidence")}`
-      : null
+    evidenceType ? `Evidence: ${evidenceType}` : null
   ].filter((line): line is string => Boolean(line));
+  const extractedPreview = [
+    normalizedClaim,
+    deadlineText ? `Deadline: ${deadlineText}` : null,
+    deadlineAt ? `Recorded for ${deadlineAt}` : null,
+    deadlineConfidence != null ? `Confidence: ${deadlineConfidence}` : null
+  ].filter((line): line is string => Boolean(line));
+  const contextPreview = [
+    rationale,
+    notClockableReason,
+    ...ambiguityNotes,
+    ...deliveryCriteria.slice(0, 2),
+    ...nonDeliveryCriteria.slice(0, 2)
+  ].filter((line): line is string => Boolean(line));
+  const sourceMeta = [
+    projectName ? `Project: ${projectName}` : null,
+    projectSlug ? `Slug: ${projectSlug}` : null,
+    actorHandle ? `Actor: @${actorHandle}` : null
+  ].filter((line): line is string => Boolean(line));
+  const kindLabel = props.reviewItem.kind.replaceAll("_", " ");
 
   return (
-    <article className="admin-card">
-      <div className="admin-card-head">
-        <strong>{props.reviewItem.kind}</strong>
-        <span>{props.reviewItem.status}</span>
+    <article className="review-card">
+      <div className="review-card-header">
+        <div className="review-card-copy">
+          <span className="card-kicker">Review item</span>
+          <h3 className="card-title">{kindLabel}</h3>
+          {props.reviewItem.reason ? (
+            <p className="muted-copy">{props.reviewItem.reason}</p>
+          ) : null}
+        </div>
+        <div className="review-card-meta">
+          <span className="tab">{props.reviewItem.status}</span>
+          <span className="mini-label">{props.reviewItem.createdAt.toUTCString()}</span>
+        </div>
       </div>
-      <div className="admin-card-head">
-        <span>{props.reviewItem.createdAt.toUTCString()}</span>
-      </div>
-      {props.reviewItem.reason ? <p>{props.reviewItem.reason}</p> : null}
-      {summaryLines.length > 0 ? (
-        <div className="panel">
-          <ul className="simple-list">
-            {summaryLines.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
+      {headerMeta.length > 0 ? (
+        <div className="review-inline-list">
+          {headerMeta.map((item) => (
+            <span key={item} className="hero-meta-item">
+              {item}
+            </span>
+          ))}
         </div>
       ) : null}
-      <div className="panel">
-        <strong>Proposed action</strong>
-        <p style={{ marginBottom: 0 }}>{proposedAction(props.reviewItem.kind, payload)}</p>
+      <div className="review-card-sections">
+        {(sourceQuote || sourceMeta.length > 0 || sourceUrl) && (
+          <section className="review-section">
+            <span className="mini-label">Source preview</span>
+            {sourceQuote ? <div className="quote-block">“{sourceQuote}”</div> : null}
+            {sourceMeta.length > 0 ? (
+              <p className="review-section-copy">{sourceMeta.join(" · ")}</p>
+            ) : null}
+            {sourceUrl ? <a href={sourceUrl}>Open source</a> : null}
+          </section>
+        )}
+        {extractedPreview.length > 0 ? (
+          <section className="review-section">
+            <span className="mini-label">Extracted claim</span>
+            <ul className="simple-list">
+              {extractedPreview.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+        {(evidenceSummary || contextPreview.length > 0) && (
+          <section className="review-section">
+            <span className="mini-label">Evidence and rationale</span>
+            {evidenceSummary ? <p className="review-section-copy">{evidenceSummary}</p> : null}
+            {contextPreview.length > 0 ? (
+              <ul className="simple-list">
+                {contextPreview.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            ) : null}
+          </section>
+        )}
       </div>
-      <pre>{JSON.stringify(props.reviewItem.payloadJson, null, 2)}</pre>
-      <p>Approval does not post externally.</p>
-      <div className="admin-actions">
+      <div className="review-callout">
+        <strong className="banner-title">Proposed action</strong>
+        <p className="muted-copy">{proposedAction(props.reviewItem.kind, payload)}</p>
+      </div>
+      <details className="details-reset">
+        <summary>Payload JSON</summary>
+        <pre>{JSON.stringify(props.reviewItem.payloadJson, null, 2)}</pre>
+      </details>
+      <p className="muted-copy">Approval does not post externally.</p>
+      <div className="review-card-actions">
         {verdict === "NOT_CLOCKABLE" ? null : (
           <form action={`/api/admin/review/${props.reviewItem.id}/approve`} method="post">
             {props.adminPassword ? (

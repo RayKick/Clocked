@@ -1,4 +1,6 @@
 node_modules
+.DS_Store
+.npmrc
 .next
 .next-dev
 **/.next
@@ -16,3 +18,5 @@ playwright-report
 test-results
 packages/db/generated
 packages/db/src/generated
+.vercel
+ui design/
